@@ -1,7 +1,7 @@
-a22b96e644a77dccd6c7af88bdef0be9 *DESCRIPTION
+6d5dca15e2aa8169525092ddbbde5b3a *DESCRIPTION
 4641e94ec96f98fabc56ff9cc48be14b *LICENSE
-2ca333ac4b11965c0350c031158bf5df *NAMESPACE
-497aa994ac21a936ea255790c365722d *NEWS.md
+aae21745571c20f46c27eb1bce944735 *NAMESPACE
+05111353591f39198f3e638b26356f7c *NEWS.md
 49de6f021d2144154ebb664470c85575 *R/RcppExports.R
 8c0c8f7d87f405bfab1ae415322bfa92 *R/approxSE.R
 0d2e86ab4a3870819ce04188cdd293fc *R/bootSE.R
@@ -29,7 +29,7 @@ e5a6d1a459e75825ab68718851fc62c3 *R/print.bootSE.R
 58ca73b141cb8918a4dec27ebca33600 *R/ranef.mjoint.R
 f81a3917ac8941e0f45b005632c489b5 *R/renal.R
 657d4a103261158c8ae3b958b12044fa *R/sampleData.R
-2e4714eced9af460a3c6236c28737375 *R/sigma.mjoint.R
+c8ac751a2f672d97146734e8fd0c9742 *R/sigma.mjoint.R
 33ac19cb73e7e89acdba466b9e4e79eb *R/simData.R
 cc016cb3e397442274f7c441335dca55 *R/stepEM.R
 78eebb550a89f51b3f77c9d42fe5ee74 *R/summary.mjoint.R
@@ -42,9 +42,9 @@ e23af73d904b2f9318ec2b15a5370ad2 *data/pbc2.rda
 77bbda7155e145c33bbf6203301144c0 *data/renal.rda
 bf5134733da3e5ce4ff520dd38a16933 *inst/doc/joineRML.R
 5c2d443a5fe9bbe91daaea217f9cfb5f *inst/doc/joineRML.Rmd
-6bb88b7aeccae374cbd2934b0196ca6b *inst/doc/joineRML.html
+82156774f1024cbe144974b15fcbad28 *inst/doc/joineRML.html
 9632fab6c3bef5c4883dcc8f3af09629 *inst/doc/technical.ltx
-ef475cc7927f1510034452ea6804af16 *inst/doc/technical.pdf
+ca9fb3cf85681ddd4e16cf196fcf6a2b *inst/doc/technical.pdf
 d3871ea811509d68b4072bcb85ae192a *man/EexpWArma.Rd
 83d4f412f21e4df68453b59645a577c2 *man/approxSE.Rd
 832841b12cfe69fc924336630cae565c *man/bSim.Rd
@@ -80,7 +80,7 @@ ea1fa9bc2cdebe49f296c42e66f2f94b *man/print.bootSE.Rd
 18383c4a6f60d45e46205331ac4993a9 *man/ranef.mjoint.Rd
 565a27edac0a55ee9ea180ecad5fe49e *man/renal.Rd
 a5554256c0e85b9f4e65c6596f6c884f *man/sampleData.Rd
-b79812fa3c85a7369fb95a2a15e822ee *man/sigma.mjoint.Rd
+a1e3d68d7c7b99e86f8f9b850aa31f24 *man/sigma.mjoint.Rd
 d240fbb2fb6128dc9d199e9fc05e710f *man/simData.Rd
 843de4f274806903a79a4dc80bf5fe95 *man/stepEM.Rd
 7630d9012ec40aece38ce414225bd3e1 *man/summary.mjoint.Rd

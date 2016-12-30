@@ -2,7 +2,7 @@ Package: joineRML
 Type: Package
 Title: Joint Modelling of Multivariate Longitudinal Data and
         Time-to-Event Outcomes
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Graeme L.", "Hickey", email = "graeme.hickey@liverpool.ac.uk", 
         role = c("cre", "aut")),
@@ -30,19 +30,19 @@ License: GPL-2 | file LICENSE
 URL: https://github.com/graemeleehickey/joineRML/
 BugReports: https://github.com/graemeleehickey/joineRML/issues
 LazyData: true
-Depends: R (>= 3.1)
-Imports: graphics, MASS, Matrix, nlme, Rcpp (>= 0.12.7), stats,
-        survival, utils
+Depends: R (>= 3.1.1)
+Imports: graphics, lme4 (>= 1.1-8), MASS, Matrix, nlme, Rcpp (>=
+        0.12.7), stats, survival, utils
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 5.0.1
-Suggests: joineR, knitr, rmarkdown, R.rsp
+Suggests: JM, joineR, knitr, rmarkdown, R.rsp
 VignetteBuilder: knitr, R.rsp
 NeedsCompilation: yes
-Packaged: 2016-12-27 00:07:22 UTC; graemeleehickey
+Packaged: 2016-12-30 15:42:37 UTC; graemeleehickey
 Author: Graeme L. Hickey [cre, aut],
   Pete Philipson [aut],
   Andrea Jorgensen [aut],
   Ruwanthi Kolamunnage-Dona [aut],
   Paula Williamson [ctb]
 Repository: CRAN
-Date/Publication: 2016-12-27 13:36:19
+Date/Publication: 2016-12-30 17:17:22
