@@ -1,11 +1,9 @@
-#' Print \code{mjoint} object
-#'
 #' @keywords internal
 #' @export
 print.mjoint <- function(x, digits = max(4, getOption("digits") - 4), ...) {
 
   if (!inherits(x, "mjoint")) {
-    stop("Use only with 'mjoint' objects.\n")
+    stop("Use only with 'mjoint' model objects.\n")
   }
 
   K <- x$dims$K

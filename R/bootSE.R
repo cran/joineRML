@@ -1,22 +1,22 @@
 #' Standard errors via bootstrap for an \code{mjoint} object
 #'
-#' This function takes a model fit from an \code{mjoint} object and calculates
-#' standard errors and confidence intervals for the main longitudinal and
-#' survival coefficient parameters, including the latent association parameters,
-#' using bootstrapping (Efron and Tibshirani, 2000).
+#' @description This function takes a model fit from an \code{mjoint} object and
+#'   calculates standard errors and confidence intervals for the main
+#'   longitudinal and survival coefficient parameters, including the latent
+#'   association parameters, using bootstrapping (Efron and Tibshirani, 2000).
 #'
 #' @param object an object inheriting from class \code{mjoint} for a joint model
 #'   of time-to-event and multivariate longitudinal data.
-#' @param nboot the number of bootstrap samples. Default is \code{nboot=100}.
+#' @param nboot the number of bootstrap samples. Default is \code{nboot = 100}.
 #' @param ci the confidence interval to be estimated using the
-#'   percentile-method. Default is \code{ci=0.95} for a 95\% confidence
+#'   percentile-method. Default is \code{ci = 0.95} for a 95\% confidence
 #'   interval.
-#' @param use.mle logical: should the algorithm use the maximiser from the
+#' @param use.mle logical: should the algorithm use the maximizer from the
 #'   converged model in \code{object} as initial values for coefficients in each
-#'   bootstrap iteration. Default is \code{use.mle=TRUE}.
+#'   bootstrap iteration. Default is \code{use.mle = TRUE}.
 #' @param progress logical: should a progress bar be shown on the console to
 #'   indicate the percentage of bootstrap iterations completed? Default is
-#'   \code{progress=TRUE}.
+#'   \code{progress = TRUE}.
 #' @inheritParams mjoint
 #'
 #' @details Standard errors and confidence intervals are obtained by repeated
@@ -53,7 +53,7 @@
 #' data(heart.valve)
 #' hvd <- heart.valve[!is.na(heart.valve$log.grad) & !is.na(heart.valve$log.lvmi), ]
 #'
-#' fit2 <- mjoint(
+#' fit <- mjoint(
 #'     formLongFixed = list("grad" = log.grad ~ time + sex + hs,
 #'                          "lvmi" = log.lvmi ~ time + sex),
 #'     formLongRandom = list("grad" = ~ 1 | num,
@@ -64,8 +64,8 @@
 #'     timeVar = "time",
 #'     verbose = TRUE)
 #'
-#' fit2.boot <- bootSE(fit1, 50, use.mle = TRUE, control = list(
-#'     earlyPhase = 25, convCrit = "either",
+#' fit.boot <- bootSE(fit, 50, use.mle = TRUE, control = list(
+#'     burnin = 25, convCrit = "either",
 #'     tol0 = 6e-03, tol2 = 6e-03, mcmaxIter = 60))
 #' }
 bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
@@ -84,6 +84,16 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
   formSurv <- object$formSurv
   timeVar <- object$timeVar
   K <- object$dims$K
+
+  # Control parameters
+  con <- object$control
+  nc <- names(con)
+  control <- c(control, list(...))
+  con[(conArgs <- names(control))] <- control
+
+  if (length(unmatched <- conArgs[!(conArgs %in% nc)]) > 0) {
+    warning("Unknown arguments passed to 'control': ", paste(unmatched, collapse = ", "))
+  }
 
   # Use fitted model MLE as initial values?
   if (use.mle) {
@@ -112,9 +122,8 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
                          timeVar = timeVar,
                          inits = theta.hat,
                          verbose = verbose,
-                         se.approx = FALSE,
-                         postRE = FALSE,
-                         control = control,
+                         pfs = FALSE,
+                         control = con,
                          ...)
     )
     out[[b]] <- fit.boot$coefficients
@@ -129,7 +138,7 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
 
   # Checks
   if (mean(conv.status) <= 0.1) {
-    stop("Cannot estimate SEs: less than 10% of bootstrap models converged.")
+    stop("Cannot estimate SEs: fewer than 10% of bootstrap models converged.")
   }
   out <- out[conv.status]
 

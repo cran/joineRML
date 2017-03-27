@@ -1,13 +1,12 @@
-#' Internal function for performing a single iteration of the EM algorithm for a
-#' multivariate linear mixed model with possibly unabalnced data
-#'
 #' @keywords internal
 mvlme <- function(thetaLong, l, z, tol.em, verbose) {
 
   # Multivariate longitudinal data
   yi <- l$yi
   Xi <- l$Xi
-  Xit <- l$Xit
+  XtX.inv <- l$XtX.inv
+  Xtyi <- l$Xtyi
+  XtZi <- l$XtZi
   Zi <- l$Zi
   Zit <- l$Zit
   nik <- l$nik
@@ -70,20 +69,13 @@ mvlme <- function(thetaLong, l, z, tol.em, verbose) {
     #-----------------------------------------------------
 
     # beta
-    XtX <- mapply(function(xt, x) {
-      xt %*% x
+    rr <- mapply(function(x1, x2, b) {
+      x1 - (x2 %*% b)
     },
-    xt = Xit, x = Xi,
-    SIMPLIFY = FALSE)
-    XtX.sum <- Reduce("+", XtX)
-
-    rr <- mapply(function(xt, y, z, b) {
-      xt %*% (y - (z %*% b))
-    },
-    xt = Xit, y = yi, z = Zi, b = Eb)
+    x1 = Xtyi, x2 = XtZi, b = Eb)
     rr.sum <- rowSums(rr)
 
-    beta.new <- solve(XtX.sum, rr.sum)
+    beta.new <- as.vector(XtX.inv %*% rr.sum)
     names(beta.new) <- names(beta)
 
     #-----------------------------------------------------
@@ -99,7 +91,7 @@ mvlme <- function(thetaLong, l, z, tol.em, verbose) {
         b.k <- b[(b.inds[k] + 1):(b.inds[k + 1])]
         bbT.k <- b2[(b.inds[k] + 1):(b.inds[k + 1]), (b.inds[k] + 1):(b.inds[k + 1])]
         residFixed <- (y - x %*% beta.k)
-        t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag((t(z) %*% z) %*% bbT.k))
+        t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag(crossprod(z) %*% bbT.k))
       },
       y = yik[[k]], x = Xik.list[[k]], z = Zik.list[[k]], b = Eb, b2 = EbbT)
       sigma2.new[k] <- sum(SSq) / nk[[k]]

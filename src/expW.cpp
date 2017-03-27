@@ -3,11 +3,12 @@
 
 using namespace Rcpp;
 
-//' Calculation of exp{W(tj, b)}
-//'
 //' @keywords internal
 // [[Rcpp::export]]
-List expWArma(Rcpp::List iz_, Rcpp::List b_, arma::mat gam, Rcpp::List h_) {
+List expWArma(const Rcpp::List& iz_, const Rcpp::List& b_, const arma::mat& gam,
+              const Rcpp::List& h_) {
+
+  // Calculation of exp{W(tj, b)}
 
   List expw(b_.size());
 
@@ -29,21 +30,5 @@ List expWArma(Rcpp::List iz_, Rcpp::List b_, arma::mat gam, Rcpp::List h_) {
   }
 
   return(expw);
-}
 
-
-//' Calculation of E[exp{W(tj, b)}]
-//'
-//' @keywords internal
-// [[Rcpp::export]]
-List EexpWArma(Rcpp::List w_, Rcpp::List pb_) {
-  List out(w_.size());
-  for (int i=0; i<w_.size(); i++) {
-
-    arma::mat w = Rcpp::as<arma::mat>(w_[i]);
-    arma::vec pb = Rcpp::as<arma::vec>(pb_[i]);
-    out[i] = mean(w.each_col() % pb, 0);
-
-  }
-  return(out);
 }

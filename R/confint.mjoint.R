@@ -1,19 +1,19 @@
 #' Confidence intervals for model parameters of an \code{mjoint} object
 #'
-#' This function computes confidence intervals for one or more parameters in a
-#' fitted \code{mjoint} object.
+#' @description This function computes confidence intervals for one or more
+#'   parameters in a fitted \code{mjoint} object.
 #'
 #' @param object an object inheriting from class \code{mjoint} for a joint model
 #'   of time-to-event and multivariate longitudinal data.
 #' @param parm a character string specifying which sub-model parameter
 #'   confidence intervals should be returned for. Can be specified as
-#'   \code{parm='Longitudinal'} (multvariate longitudinal sub-model),
-#'   \code{parm='Event'} (time-to-event sub-model), or \code{parm='both'}
+#'   \code{parm = 'Longitudinal'} (multivariate longitudinal sub-model),
+#'   \code{parm = 'Event'} (time-to-event sub-model), or \code{parm = 'both'}
 #'   (default).
-#' @param level the confidence level required. Default is \code{level=0.95} for
+#' @param level the confidence level required. Default is \code{level = 0.95} for
 #'   a 95\% confidence interval.
 #' @param bootSE an object inheriting from class \code{bootSE} for the
-#'   corresponding model. If \code{bootSE=NULL}, the function will attempt to
+#'   corresponding model. If \code{bootSE = NULL}, the function will attempt to
 #'   utilize approximate standard error estimates (if available) calculated from
 #'   the empirical information matrix.
 #' @param ... additional arguments; currently none are used.
@@ -63,7 +63,7 @@
 #'     data = hvd,
 #'     timeVar = "time",
 #'     inits = list(gamma = gamma, sigma2 = sigma2, beta = beta, D = D),
-#'     control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+#'     control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 #'
 #' confint(fit1, parm = "Longitudinal")
 #'
@@ -105,7 +105,7 @@ confint.mjoint <- function(object, parm = c("Both", "Longitudinal", "Event"),
   beta <- object$coefficients$beta
   beta.inds <- (num.d + 1):(num.d + num.b)
   if (is.null(bootSE)) {
-    beta.se <- object$SE.approx[beta.inds]
+    beta.se <- sqrt(diag(vcov(object)))[beta.inds]
   } else {
     beta.se <- bootSE$beta.se
   }
@@ -116,7 +116,7 @@ confint.mjoint <- function(object, parm = c("Both", "Longitudinal", "Event"),
   gamma <- object$coefficients$gamma
   gamma.inds <- (num.d + num.b + num.s + 1):(num.d + num.b + num.s + num.g)
   if (is.null(bootSE)) {
-    gamma.se <- object$SE.approx[gamma.inds]
+    gamma.se <- sqrt(diag(vcov(object)))[gamma.inds]
   } else {
     gamma.se <- bootSE$gamma.se
   }

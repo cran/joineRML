@@ -1,7 +1,5 @@
-#' Approximate standard errors using the empirical information matrix
-#'
 #' @keywords internal
-approxSE <- function(theta, l, t, z, m) {
+hessian <- function(theta, l, t, z, m) {
 
   # MLE parameter estimates from EM algorithm
   D <- theta$D
@@ -13,7 +11,6 @@ approxSE <- function(theta, l, t, z, m) {
   # Multivariate longitudinal data
   yi <- l$yi
   Xi <- l$Xi
-  Xit <- l$Xit
   Zi <- l$Zi
   Zit <- l$Zit
   nik <- l$nik
@@ -55,34 +52,52 @@ approxSE <- function(theta, l, t, z, m) {
 
   # beta
 
-  sbeta <- mapply(function(xt, x, sinv, y, z, b) {
-    (xt %*% sinv) %*% (y - x %*% beta - z %*% b)
+  sbeta <- mapply(function(x, sinv, y, z, b) {
+    (t(x) %*% sinv) %*% (y - x %*% beta - z %*% b)
   },
-  xt = Xit, x = Xi, sinv = Sigmai.inv, y = yi, z = Zi, b = Eb,
+  x = Xi, sinv = Sigmai.inv, y = yi, z = Zi, b = Eb,
   SIMPLIFY = TRUE)
 
   rownames(sbeta) <- names(beta)
 
   #-----------------------------------------------------
 
-  # Dinv
+  # D
 
-  sDinv <- lapply(EbbT, function(b2) {
-    0.5 * (2*D - diag(D)) - 0.5 * (2 * b2 - diag(b2))
+  Dinv <- solve(D)
+
+  D.inds <- which(lower.tri(D, diag = TRUE), arr.ind = TRUE)
+  dimnames(D.inds) <- NULL
+
+  delta.D <- lapply(1:nrow(D.inds), function(x, ind) {
+    mat <- matrix(0, nrow = nrow(D), ncol = ncol(D))
+    ii <- ind[x, , drop = FALSE]
+    mat[ii[1], ii[2]] <- mat[ii[2], ii[1]] <- 1
+    mat
+  }, ind = D.inds[, 2:1, drop = FALSE])
+
+  term1 <- sapply(delta.D, function(d) {
+    -0.5 * sum(diag(Dinv %*% d))
   })
-  sDinv <- sapply(sDinv, function(d) d[lower.tri(d, diag = TRUE)])
-  if (sum(r) == 1) {
-    sDinv <- matrix(sDinv, nrow = 1)
+
+  sDi <- function(i) {
+    mapply(function(b, pb) {
+      out <- 0.5 * crossprod(b, b * pb) %*% (Dinv %*% delta.D[[i]] %*% Dinv) / nrow(b)
+      term1[i] + sum(diag(out))
+    },
+    b = bi.y, pb = pb.yt,
+    SIMPLIFY = TRUE)
   }
 
-  ltri <- lower.tri(D, diag = TRUE)
-  rownames(sDinv) <- paste0("Dinv_", row = row(D)[ltri], ",", col = col(D)[ltri])
+  sD <- sapply(1:nrow(D.inds), sDi)
+  sD <- t(sD)
+  rownames(sD) <- paste0("D", D.inds[, 1], ",", D.inds[, 2])
 
   #-----------------------------------------------------
 
   # gamma
 
-  sgamma <- gammaUpdate(bi.y, Zit.fail, expvstargam, pb.yt, haz.hat,
+  sgamma <- gammaUpdate_approx(bi.y, Zit.fail, expvstargam, pb.yt, haz.hat,
                         V, survdat2.list, K, q, nev.uniq)$scorei
 
   rownames(sgamma) <- names(gamma)
@@ -101,7 +116,7 @@ approxSE <- function(theta, l, t, z, m) {
       b.k <- b[(b.inds[k] + 1):(b.inds[k + 1])]
       bbT.k <- b2[(b.inds[k] + 1):(b.inds[k + 1]), (b.inds[k] + 1):(b.inds[k + 1])]
       residFixed <- (y - x %*% beta.k)
-      resids <- t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag(t(z) %*% z %*% bbT.k))
+      resids <- t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag(crossprod(z) %*% bbT.k))
       (-0.5 * nik[k] / sigma2[k]) + (0.5 * resids / sigma2[k]^2)
     },
     y = yik[[k]], x = Xik.list[[k]], z = Zik.list[[k]], b = Eb, b2 = EbbT, nik = nik)
@@ -111,15 +126,17 @@ approxSE <- function(theta, l, t, z, m) {
 
   #-----------------------------------------------------
 
-  si <- rbind(sDinv, sbeta, ssigma2, sgamma)
+  si <- rbind(sD, sbeta, ssigma2, sgamma)
 
-  ses <- matrix(0, nrow(si), nrow(si))
-  for (j in 1:ncol(si)) ses <- ses + si[, j] %*% t(si[, j])
+  H <- matrix(0, nrow(si), nrow(si))
+  for (j in 1:ncol(si)) {
+    H <- H + tcrossprod(si[, j])
+  }
   # Although RHS term = 0 in theory, in practice with MC integration
   # not all terms are vanishingly small, so we add it in
-  ses <- ses - (rowSums(si) %*% t(rowSums(si))) / ncol(si)
-  rownames(ses) <- colnames(ses) <- rownames(si)
+  H <- H - (rowSums(si) %*% t(rowSums(si))) / ncol(si)
+  rownames(H) <- colnames(H) <- rownames(si)
 
-  return(ses)
+  return(H)
 
 }

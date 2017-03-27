@@ -91,28 +91,13 @@ A list with the following components. \describe{
   \item{\code{log.lik}}{the log-likelihood from the joint model fit.}
 
   \item{\code{ll.hx}}{a vector of the log-likelihood values for each MCEM
-  algorithm interation.}
+  algorithm interaction.}
 
   \item{\code{control}}{a list of control parameters used in the estimation
   of the joint model. See \code{\link{mjoint}} for details.}
 
   \item{\code{finalnMC}}{the final number of Monte Carlo samples required
   prior to convergence.}
-
-  \item{\code{vcov}}{if \code{se.approx=TRUE} in the call to \code{mjoint},
-  the variance-covariance matrix of model parameters, as approximated by the
-  empirical information matrix, is reported. See \code{\link{mjoint}} for
-  details.}
-
-  \item{\code{SE.approx}}{if \code{se.approx=TRUE} in the call to
-  \code{mjoint}, the square-root of the diagonal of \code{vcov} is returned,
-  which are estimates of the standard errors for the parameters.}
-
-  \item{\code{Eb}}{a matrix with the estimated random effects values for each
-  subject.}
-
-  \item{\code{Vb}}{an array with the estimated variance-covariance matrices
-  for the random effects values for each subject.}
 
   \item{\code{call}}{the matched call.}
 
@@ -125,19 +110,46 @@ A list with the following components. \describe{
   }
 }
 \description{
-An object returned by the \code{mjoint} function, inheriting from class
-\code{mjoint} and representing a fitted joint model for multivariate
-longitudinal and time-to-event data. Objects of this class have methods for
-the generic functions \code{coef}, \code{logLik}, \code{plot}, \code{print},
-\code{ranef}, \code{fixef}, \code{summary}, \code{AIC}, \code{getVarCov},
-\code{vcov}, \code{confint}, \code{sigma}, and \code{formula}.
+An object returned by the \code{mjoint} function, inheriting
+  from class \code{mjoint} and representing a fitted joint model for
+  multivariate longitudinal and time-to-event data. Objects of this class
+  have methods for the generic functions \code{coef}, \code{logLik},
+  \code{plot}, \code{print}, \code{ranef}, \code{fixef}, \code{summary},
+  \code{AIC}, \code{getVarCov}, \code{vcov}, \code{confint}, \code{sigma},
+  and \code{formula}.
+}
+\section{Post model fit statistics}{
+
+
+  If \code{pfs = TRUE}, indicating that post-fit statistics are to be
+  returned, then the output also includes the following objects. \describe{
+
+  \item{\code{vcov}}{the variance-covariance matrix of model parameters, as
+  approximated by the empirical information matrix, is reported. See
+  \code{\link{mjoint}} for details.}
+
+  \item{\code{SE.approx}}{the square-root of the diagonal of \code{vcov} is
+  returned, which are estimates of the standard errors for the parameters.}
+
+  \item{\code{Eb}}{a matrix with the estimated random effects values for each
+  subject.}
+
+  \item{\code{Vb}}{an array with the estimated variance-covariance matrices
+  for the random effects values for each subject.}
+
+  \item{\code{dmats}}{a list of length 3 containing the design matrices, data
+  frames, and vectors used in the MCEM algorithm. These are required to
+  calculated the residuals. The 3 items in the list are \code{l}
+  (longitudinal data), \code{t} (time-to-event data), and \code{z} (design
+  matrices expanded over unique failure times). These are not intended to be
+  extracted by the user.}}
+}
+
+\seealso{
+\code{\link{mjoint}}.
 }
 \author{
 Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
 }
-\seealso{
-\code{\link{mjoint}}.
-}
 \keyword{multivariate}
 \keyword{survival}
-

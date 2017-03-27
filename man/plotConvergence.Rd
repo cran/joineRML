@@ -5,26 +5,27 @@
 \title{Plot convergence time series for parameter vectors from an \code{mjoint}
 object}
 \usage{
-plotConvergence(object, params = "gamma")
+plotConvergence(object, params = "gamma", discard = FALSE)
 }
 \arguments{
 \item{object}{an object inheriting from class \code{mjoint} for a joint model
 of time-to-event and multivariate longitudinal data.}
 
 \item{params}{a string indicating what parameters are to be shown. Options
-are \code{params='gamma'} for the time-to-event sub-model covariate
-coefficients, including the latent association parameters;
-\code{params='beta'} for the longitudinal sub-model fixed effects
-coefficients; \code{params='sigma2'} for the residual error variances from
-the longitudinal sub-model; \code{params='D'} for the lower triangular
-matrix of the variance-covariance matrix of random effects.}
+are \code{params = 'gamma'} for the time-to-event sub-model covariate
+coefficients, including the latent association parameters; \code{params =
+'beta'} for the longitudinal sub-model fixed effects coefficients;
+\code{params = 'sigma2'} for the residual error variances from the
+longitudinal sub-model; \code{params = 'D'} for the lower triangular matrix
+of the variance-covariance matrix of random effects; \code{params =
+'loglik'} for the log-likelihood.}
+
+\item{discard}{logical; if \code{TRUE} then the 'burn-in' phase iterations of
+the MCEM algorithm are discarded. Default is \code{discard = FALSE}.}
 }
 \description{
-Plot convergence time series for parameter vectors from an \code{mjoint}
-object.
-}
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+Plot convergence time series for parameter vectors from an
+  \code{mjoint} object.
 }
 \references{
 Wei GC, Tanner MA. A Monte Carlo implementation of the EM algorithm and the
@@ -35,6 +36,8 @@ poor man's data augmentation algorithms. \emph{J Am Stat Assoc.} 1990;
 \code{\link{plot.mjoint}}, \code{\link[graphics]{plot.default}},
   \code{\link[graphics]{par}}, \code{\link[graphics]{abline}}.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{dplot}
 \keyword{methods}
-

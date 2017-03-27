@@ -1,6 +1,7 @@
 #' Extract residual standard deviation(s) from an \code{mjoint} object
 #'
-#' Extract residual standard deviation(s) from an \code{mjoint} object.
+#' @description Extract residual standard deviation(s) from an \code{mjoint}
+#'   object.
 #'
 #' @inheritParams confint.mjoint
 #'
@@ -8,8 +9,6 @@
 #' @keywords methods
 #' @seealso \code{\link[lme4]{sigma}} in the \strong{lme4} package.
 #'
-#' @rawNamespace if (getRversion() >= '3.3.0') importFrom(stats,sigma) else
-#'   importFrom(lme4,sigma)
 #' @references
 #'
 #' Pinheiro JC, Bates DM. \emph{Mixed-Effects Models in S and S-PLUS.} New York:
@@ -17,6 +16,12 @@
 #'
 #' @return a number (standard deviation) if \eqn{K=1} (univariate model), or a
 #'   vector if \eqn{K>1} (multivariate model).
+#' @rawNamespace
+#' if (getRversion() >= '3.3.0') {
+#'     importFrom(stats,sigma)
+#' } else {
+#'     importFrom(lme4,sigma)
+#' }
 #' @export
 sigma.mjoint <- function(object, ...) {
 

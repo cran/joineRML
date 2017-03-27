@@ -5,11 +5,11 @@
 \title{Extract variance-covariance matrix of random effects from an \code{mjoint}
 object}
 \usage{
-\method{getVarCov}{mjoint}(object, ...)
+\method{getVarCov}{mjoint}(obj, ...)
 }
 \arguments{
-\item{object}{an object inheriting from class \code{mjoint} for a joint model
-of time-to-event and multivariate longitudinal data.}
+\item{obj}{an object inheriting from class \code{mjoint} for a joint model of
+time-to-event and multivariate longitudinal data.}
 
 \item{...}{additional arguments; currently none are used.}
 }
@@ -17,8 +17,8 @@ of time-to-event and multivariate longitudinal data.}
 A variance-covariance matrix.
 }
 \description{
-Extract variance-covariance matrix of random effects from an \code{mjoint}
-object.
+Extract variance-covariance matrix of random effects from an
+  \code{mjoint} object.
 }
 \examples{
 \dontrun{
@@ -41,9 +41,6 @@ fit2 <- mjoint(
 getVarCov(fit2)
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \references{
 Pinheiro JC, Bates DM. \emph{Mixed-Effects Models in S and S-PLUS.} New York:
 Springer Verlag; 2000.
@@ -51,5 +48,7 @@ Springer Verlag; 2000.
 \seealso{
 \code{\link[nlme]{getVarCov}} for the generic method description.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{methods}
-

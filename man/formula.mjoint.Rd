@@ -11,12 +11,12 @@
 \item{x}{an object inheriting from class \code{mjoint} for a joint model of
 time-to-event and multivariate longitudinal data.}
 
-\item{process}{character string: if \code{process='Longitudinal'} a fixed
+\item{process}{character string: if \code{process = 'Longitudinal'} a fixed
 effects formula from the (multivariate) longitudinal sub-model is returned
-for the \code{k}-th outcome. Else, if \code{process='Event'}, the
+for the \code{k}-th outcome. Else, if \code{process = 'Event'}, the
 time-to-event model formula is returned.}
 
-\item{k}{inetger: a number between 1 and K (the total number of longitudinal
+\item{k}{integer: a number between 1 and K (the total number of longitudinal
 outcomes) that specifies the longitudinal outcome of interest.}
 
 \item{...}{additional arguments; currently none are used.}
@@ -27,9 +27,6 @@ An object of class "formula" which contains a symbolic model formula
 }
 \description{
 Extract model formulae from an \code{mjoint} object.
-}
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
 }
 \references{
 Pinheiro JC, Bates DM. \emph{Mixed-Effects Models in S and S-PLUS.} New York:
@@ -42,5 +39,7 @@ measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 \code{\link[stats]{formula}} for the generic method description, and
   \code{\link{ranef.mjoint}}.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{methods}
-

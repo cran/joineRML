@@ -1,15 +1,15 @@
 #' Extract model formulae from an \code{mjoint} object
 #'
-#' Extract model formulae from an \code{mjoint} object.
+#' @description Extract model formulae from an \code{mjoint} object.
 #'
 #' @inheritParams confint.mjoint
 #' @param x an object inheriting from class \code{mjoint} for a joint model of
 #'   time-to-event and multivariate longitudinal data.
-#' @param process character string: if \code{process='Longitudinal'} a fixed
+#' @param process character string: if \code{process = 'Longitudinal'} a fixed
 #'   effects formula from the (multivariate) longitudinal sub-model is returned
-#'   for the \code{k}-th outcome. Else, if \code{process='Event'}, the
+#'   for the \code{k}-th outcome. Else, if \code{process = 'Event'}, the
 #'   time-to-event model formula is returned.
-#' @param k inetger: a number between 1 and K (the total number of longitudinal
+#' @param k integer: a number between 1 and K (the total number of longitudinal
 #'   outcomes) that specifies the longitudinal outcome of interest.
 #'
 #' @author Graeme L. Hickey (\email{graeme.hickey@@liverpool.ac.uk})
@@ -31,7 +31,7 @@
 formula.mjoint <- function(x, process = c("Longitudinal", "Event"), k = 1, ...) {
 
   if (!inherits(x, "mjoint")) {
-    stop("Use only with 'mjoint' objects.\n")
+    stop("Use only with 'mjoint' model objects.\n")
   }
 
   K <- x$dims$K

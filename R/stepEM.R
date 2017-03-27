@@ -1,13 +1,5 @@
-#' Internal function for performing a single iteration of the MCEM algorithm
-#'
-#' Also takes logical arguments \code{ll} and \code{se.approx}, which calculates
-#' the log-likelihood (and posterior mean and variance of the random effects)
-#' and approximate standard errors, respectively. When either of these arguments
-#' are \code{TRUE}, the function does not return the maaximizer from the MCEM
-#' algorithm iteration, and instead reports the called for post-fit statistics.
-#'
 #' @keywords internal
-stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
+stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, pfs) {
 
   # Input parameter estimates
   D <- theta$D
@@ -19,7 +11,9 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
   # Multivariate longitudinal data
   yi <- l$yi
   Xi <- l$Xi
-  Xit <- l$Xit
+  XtX.inv <- l$XtX.inv
+  Xtyi <- l$Xtyi
+  XtZi <- l$XtZi
   Zi <- l$Zi
   Zit <- l$Zit
   nik <- l$nik
@@ -70,16 +64,6 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
   z = Zi, zt = Zit, s = Sigmai.inv,
   SIMPLIFY = FALSE)
 
-  # # If Ai is non-PSD, approximate Ai by nearest PD matrix
-  # Ai <- lapply(Ai, FUN = function(a) {
-  #   if (any(eigen(a, symmetric = TRUE)$values < 0)) {
-  #     print("Non-PSD matrix detected!")
-  #     a <- fast_nearPD(a)
-  #   } else {
-  #     a
-  #   }
-  # })
-
   # MVN mean vector for [y | b]
   Mi <- mapply(function(a, z, s, y, X) {
     as.vector(a %*% (z %*% s %*% (y - X %*% beta)))
@@ -103,14 +87,10 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
   }
 
   # Expanded gamma_y (repeated for each random effect term)
-  if (sum(r) > 1) {
-    if (q > 0) {
-      gamma.scale <- diag(rep(gamma[-(1:q)], r))
-    } else {
-      gamma.scale <- diag(rep(gamma, r))
-    }
+  if (q > 0) {
+    gamma.scale <- diag(rep(gamma[-(1:q)], r), ncol = sum(r))
   } else {
-    gamma.scale <- gamma[length(gamma)] # just a single gamma_y
+    gamma.scale <- diag(rep(gamma, r), ncol = sum(r))
   }
 
   # exp{W(tj, b)}
@@ -182,7 +162,7 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
                                  V, survdat2.list, K, q, nev.uniq)$gDelta
   } else {
     gDelta <- gammaUpdate(bi.y, Zit.fail, expvstargam, pb.yt, haz.hat,
-                          V, survdat2.list, K, q, nev.uniq)$gDelta
+                          V, survdat2.list, K, q, nev.uniq, nev)$gDelta
   }
 
   t2 <- Sys.time()
@@ -198,20 +178,13 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
   #-----------------------------------------------------
 
   # beta
-  XtX <- mapply(function(xt, x) {
-    xt %*% x
+  rr <- mapply(function(x1, x2, b) {
+    x1 - (x2 %*% b)
   },
-  xt = Xit, x = Xi,
-  SIMPLIFY = FALSE)
-  XtX.sum <- Reduce("+", XtX)
-
-  rr <- mapply(function(xt, y, z, b) {
-    xt %*% (y - (z %*% b))
-  },
-  xt = Xit, y = yi, z = Zi, b = Eb)
+  x1 = Xtyi, x2 = XtZi, b = Eb)
   rr.sum <- rowSums(rr)
 
-  beta.new <- solve(XtX.sum, rr.sum)
+  beta.new <- as.vector(XtX.inv %*% rr.sum)
   names(beta.new) <- names(beta)
 
   #-----------------------------------------------------
@@ -227,7 +200,7 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
       b.k <- b[(b.inds[k] + 1):(b.inds[k + 1])]
       bbT.k <- b2[(b.inds[k] + 1):(b.inds[k + 1]), (b.inds[k] + 1):(b.inds[k + 1])]
       residFixed <- (y - x %*% beta.k)
-      t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag((t(z) %*% z) %*% bbT.k))
+      t(residFixed) %*% (residFixed - 2*(z %*% b.k)) + sum(diag(crossprod(z) %*% bbT.k))
     },
     y = yik[[k]], x = Xik.list[[k]], z = Zik.list[[k]], b = Eb, b2 = EbbT)
     sigma2.new[k] <- sum(SSq) / nk[[k]]
@@ -247,9 +220,9 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
   # Expanded gamma_y (repeated for each random effect term)
   # - using the latest EM iteration estimate
   if (q > 0) {
-    gamma.new.scale <- diag(rep(gamma.new[-(1:q)], r))
+    gamma.new.scale <- diag(rep(gamma.new[-(1:q)], r), ncol = sum(r))
   } else {
-    gamma.new.scale <- diag(rep(gamma.new, r))
+    gamma.new.scale <- diag(rep(gamma.new, r), ncol = sum(r))
   }
 
   haz.new <- lambdaUpdate(bi.y, IW.fail, Zi.fail, pb.yt, V,
@@ -261,7 +234,7 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
 
   t3 <- Sys.time()
 
-  if (verbose && !postRE) {
+  if (verbose && !pfs) {
     tdiff1 <- t1 - t0
     cat(paste("Step 1: Time to setup Monte Carlo expectations", round(tdiff1, 2),
               attr(tdiff1, "units"), "\n"))
@@ -299,9 +272,11 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
 
   #-----------------------------------------------------
 
-  ## Posterior means + variances of random effects
+  ## These are only calculated when pfs = TRUE
 
-  if (postRE) {
+  if (pfs) {
+
+    # Posterior means + variances of random effects
 
     # Var(b)
     Vb <- mapply(function(b, pb, mu) {
@@ -321,16 +296,12 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
     }
     colnames(Eb.flat) <- colnames(D)
 
-    out$Eb = Eb.flat
-    out$Vb = Vb
+    out$Eb <- Eb.flat
+    out$Vb <- Vb
 
-  }
+    #-----------------------------------------------------
 
-  #*********************************************************
-  # Approximate standard errors
-  #*********************************************************
-
-  if (se.approx) {
+    # Approximate standard errors
 
     m <- list()
     m$Sigmai.inv <- Sigmai.inv
@@ -341,7 +312,7 @@ stepEM <- function(theta, l, t, z, nMC, verbose, gammaOpt, postRE, se.approx) {
     m$pb.yt <- pb.yt
     m$haz.hat <- haz.hat
 
-    out$ses <- approxSE(theta, l, t, z, m)
+    out$Hessian <- hessian(theta, l, t, z, m)
 
   }
 

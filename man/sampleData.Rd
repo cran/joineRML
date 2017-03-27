@@ -4,23 +4,27 @@
 \alias{sampleData}
 \title{Sample from an \code{mjoint} object}
 \usage{
-sampleData(object, size = NULL)
+sampleData(object, size = NULL, replace = TRUE)
 }
 \arguments{
 \item{object}{an object inheriting from class \code{mjoint} for a joint model
 of time-to-event and multivariate longitudinal data.}
 
 \item{size}{number of subjects to include in the sampled subset. If
-\code{size=NULL} (default), then size is set equal to the number of
+\code{size = NULL} (default), then size is set equal to the number of
 subjects used to fit the \code{mjoint} model.}
+
+\item{replace}{use replacement when sampling subjects? Default is
+\code{TRUE}. If replacement is used, then the subjects are re-labelled from
+1 to \code{size}.}
 }
 \value{
 A list of 2 data.frames: one recording the requisite longitudinal
   outcomes data, and the other recording the time-to-event data.
 }
 \description{
-Generic function used to sample a subset of data from an object of class
-\code{mjoint}, with a specific size of number of subjects.
+Generic function used to sample a subset of data from an object
+  of class \code{mjoint} with a specific number of subjects.
 }
 \details{
 This function is primarily intended for internal use in the
@@ -47,14 +51,13 @@ fit2 <- mjoint(
 sampleData(fit2, size = 10)
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \seealso{
 \code{\link{mjoint}}.
+}
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
 }
 \keyword{datagen}
 \keyword{methods}
 \keyword{multivariate}
 \keyword{survival}
-

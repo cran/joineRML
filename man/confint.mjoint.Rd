@@ -13,15 +13,15 @@ of time-to-event and multivariate longitudinal data.}
 
 \item{parm}{a character string specifying which sub-model parameter
 confidence intervals should be returned for. Can be specified as
-\code{parm='Longitudinal'} (multvariate longitudinal sub-model),
-\code{parm='Event'} (time-to-event sub-model), or \code{parm='both'}
+\code{parm = 'Longitudinal'} (multivariate longitudinal sub-model),
+\code{parm = 'Event'} (time-to-event sub-model), or \code{parm = 'both'}
 (default).}
 
-\item{level}{the confidence level required. Default is \code{level=0.95} for
+\item{level}{the confidence level required. Default is \code{level = 0.95} for
 a 95\% confidence interval.}
 
 \item{bootSE}{an object inheriting from class \code{bootSE} for the
-corresponding model. If \code{bootSE=NULL}, the function will attempt to
+corresponding model. If \code{bootSE = NULL}, the function will attempt to
 utilize approximate standard error estimates (if available) calculated from
 the empirical information matrix.}
 
@@ -32,8 +32,8 @@ A matrix containing the confidence intervals for either the
   longitudinal, time-to-event, or both sub-models.
 }
 \description{
-This function computes confidence intervals for one or more parameters in a
-fitted \code{mjoint} object.
+This function computes confidence intervals for one or more
+  parameters in a fitted \code{mjoint} object.
 }
 \examples{
 # Fit a classical univariate joint model with a single longitudinal outcome
@@ -55,7 +55,7 @@ fit1 <- mjoint(formLongFixed = log.lvmi ~ time + age,
     data = hvd,
     timeVar = "time",
     inits = list(gamma = gamma, sigma2 = sigma2, beta = beta, D = D),
-    control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+    control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 
 confint(fit1, parm = "Longitudinal")
 
@@ -78,9 +78,6 @@ fit2 <- mjoint(
 confint(fit2)
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \references{
 McLachlan GJ, Krishnan T. \emph{The EM Algorithm and Extensions.} Second
 Edition. Wiley-Interscience; 2008.
@@ -100,5 +97,7 @@ measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 \code{\link{mjoint}}, \code{\link{bootSE}}, and
   \code{\link[stats]{confint}} for the generic method description.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{methods}
-

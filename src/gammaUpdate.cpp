@@ -3,14 +3,15 @@
 
 using namespace Rcpp;
 
-//' Newton-Raphson updates of gamma (E-step and M-step) using an exact observed
-//' information calculation
-//'
 //' @keywords internal
 // [[Rcpp::export]]
-List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
-                 Rcpp::List pb_, arma::vec haz,
-                 Rcpp::List v_, Rcpp::List h_, int K, int q, int nev) {
+List gammaUpdate(const Rcpp::List& b_, const Rcpp::List& z_, const Rcpp::List& w_,
+                 const Rcpp::List& pb_, const arma::vec& haz, const Rcpp::List& v_,
+                 const Rcpp::List& h_, const int& K, const int& q, const int& nev,
+                 const arma::vec& jcount) {
+
+  // Newton-Raphson updates of gamma (E-step and M-step) using an exact observed
+  // information calculation
 
   // declare score, E[delta x v*], and information matrix
   arma::mat Si = arma::zeros<arma::mat>(q+K, w_.size());
@@ -38,10 +39,10 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
     int tj_ind = h["tj.ind"];
     if (tj_ind == 0) continue;
 
-    int nj = w.n_cols;  // number of failures upto time T_i
+    int nj = w.n_cols;  // number of failure times upto time T_i
     int delta = h["delta"]; // delta_i
 
-    arma::mat Ii_int(q+K, q+K); // information matrix (uninitialized) for subject i
+    arma::mat Ii_int = arma::zeros<arma::mat>(q+K, q+K); // information matrix (uninitialized) for subject i
     arma::mat bzt = b * z; // b x t(z)
     arma::mat bztev = bzt % repmat(w, 1, K); // b x t(Z) . exp(v*gamma)
     arma::mat Eexpvj = (mean(w.each_col() % pb, 0)) % trans(haz.subvec(0, nj-1));
@@ -54,7 +55,7 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
     arma::mat Eb = mean(b.each_col() % pb, 0);
 
     // loop of K longitudinal outcomes
-    for(int k=0; k<K; k++) {
+    for (int k=0; k<K; k++) {
       // E[delta x v*(T_i)]
       Evstari(q+k, i) = delta * arma::dot(z.col(nj*(k+1)-1), Eb);
 
@@ -65,7 +66,7 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
       Ii_int(q+k, q+k) = arma::as_scalar(sum(Ii_int_Kdiag.cols(nj*k, nj*(k+1)-1), 1));
 
       // cross-prod (off-diagonal) elements for K Zb's only
-      for(int k2=k+1; k2<K; k2++) {
+      for (int k2=k+1; k2<K; k2++) {
         arma::mat bztcross = bztev.cols(nj*k, nj*(k+1)-1) % bzt.cols(nj*k2, nj*(k2+1)-1);
         Ii_int(q+k, k2+q) = arma::as_scalar(sum((mean(bztcross.each_col() % pb, 0)) % trans(haz.subvec(0, nj-1)), 1));
         Ii_int(k2+q, q+k) = Ii_int(q+k, k2+q);
@@ -73,7 +74,7 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
 
       // cross-prod elements for q V_i's and K Zb's
       if (q > 0) {
-        for(int j=0; j<q; j++) {
+        for (int j=0; j<q; j++) {
            Ii_int(j, q+k) = Si(q+k, i) * v(j);
            Ii_int(q+k, j) = Ii_int(j, q+k);
         }
@@ -92,7 +93,7 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
       // cross-prod elements
       Ii_int.submat(0, 0, q-1, q-1) = (v * trans(v)) * arma::as_scalar(Eexpv);
       // Gamma_j elements
-      Gammaj.submat(0, 0, q-1, nj-1) = kron(v, Eexpvj);
+      Gammaj.submat(0, 0, q-1, nj-1) += v * Eexpvj;
     }
 
     S += (Evstari.col(i) - Si.col(i)); // NB: actual score is sum(Evstari - Si)
@@ -101,22 +102,24 @@ List gammaUpdate(Rcpp::List b_, Rcpp::List z_, Rcpp::List w_,
   } // end loop over subjects i
 
   // lambda0 x Gamma_j sum term (minus from information matrix)
-  for(int t=0; t<nev; t++) {
-    Gamma += Gammaj.col(t) * trans(Gammaj.col(t));
+  for (int t=0; t<nev; t++) {
+    //Rcpp::Rcout << jcount(t) << std::endl;
+    Gamma += Gammaj.col(t) * trans(Gammaj.col(t)) / jcount(t);
   }
 
   return List::create(
-    _["gDelta"]  = solve(I - Gamma, S),
-    _["scorei"] = Evstari - Si
+    Named("gDelta")  = solve(I - Gamma, S),
+    Named("scorei")  = Evstari - Si
   );
+
 }
 
 
-//' lambda0(t) for profile score function of beta
-//'
 //' @keywords internal
 // [[Rcpp::export]]
-arma::mat hazHat(Rcpp::List w_, Rcpp::List pb_, arma::vec nev) {
+arma::mat hazHat(const Rcpp::List& w_, const Rcpp::List& pb_, const arma::vec& nev) {
+
+  // lambda0(t) for profile score function of beta
 
   arma::vec haz = arma::zeros<arma::vec>(nev.n_elem);
 
@@ -132,6 +135,7 @@ arma::mat hazHat(Rcpp::List w_, Rcpp::List pb_, arma::vec nev) {
   }
 
   return(nev / haz);
+
 }
 
 

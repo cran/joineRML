@@ -1,11 +1,11 @@
 #' Extract fixed effects estimates from an \code{mjoint} object
 #'
-#' Extract fixed effects estimates from an \code{mjoint} object.
+#' @description Extract fixed effects estimates from an \code{mjoint} object.
 #'
 #' @inheritParams confint.mjoint
-#' @param process character string: if \code{process='Longitudinal'} the fixed
+#' @param process character string: if \code{process = 'Longitudinal'} the fixed
 #'   effects coefficients from the (multivariate) longitudinal sub-model are
-#'   returned. Else, if \code{process='Event'}, the coefficients from the
+#'   returned. Else, if \code{process = 'Event'}, the coefficients from the
 #'   time-to-event sub-model are returned.
 #'
 #' @author Graeme L. Hickey (\email{graeme.hickey@@liverpool.ac.uk})
@@ -23,6 +23,7 @@
 #'
 #' @return A named vector of length equal to the number of sub-model
 #'   coefficients estimated.
+#' @importFrom nlme fixef
 #' @export
 #'
 #' @examples
@@ -38,7 +39,7 @@
 #'     formSurv = Surv(fuyrs, status) ~ age,
 #'     data = hvd,
 #'     timeVar = "time",
-#'     control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+#'     control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 #'
 #' fixef(fit1, process = "Longitudinal")
 #' fixef(fit1, process = "Event")

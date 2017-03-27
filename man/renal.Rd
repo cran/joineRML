@@ -36,8 +36,8 @@
   \item{\code{fuyears}}{maximum follow up time, with transplant date as the
   time origin (years).}
 
-  \item{\code{failure}}{censoring indicator (\code{1=}graft failure and
-  \code{0=}censored).}
+  \item{\code{failure}}{censoring indicator (\code{1 = }graft failure and
+  \code{0 = }censored).}
 
   }
 
@@ -70,14 +70,15 @@ Dr Dimitris Rizopoulos (d.rizopoulos@erasmusmc.nl).
 data(renal)
 }
 \description{
-This is a dataset on 407 patients suffering from chronic kidney disease who
-underwent a primary renal transplantation with a graft from a deceased or
-living donor in the University Hospital of the Catholic University of Leuven
-(Belgium) between 21 January 1983 and 16 August 2000. Chronic kidney (renal)
-disease is a progressive loss of renal function over a period of months or
-years through five stages. Each stage is a progression through an abnormally
-low and progressively worse glomerular filtration rate (GFR). The dataset
-records 3 repeated measures (2 continuous and 1 binary), and an event time.
+This is a dataset on 407 patients suffering from chronic kidney
+  disease who underwent a primary renal transplantation with a graft from a
+  deceased or living donor in the University Hospital of the Catholic
+  University of Leuven (Belgium) between 21 January 1983 and 16 August 2000.
+  Chronic kidney (renal) disease is a progressive loss of renal function over
+  a period of months or years through five stages. Each stage is a
+  progression through an abnormally low and progressively worse glomerular
+  filtration rate (GFR). The dataset records 3 repeated measures (2
+  continuous and 1 binary), and an event time.
 }
 \references{
 Rizopoulos D, Ghosh, P. A Bayesian semiparametric multivariate joint model
@@ -88,5 +89,4 @@ for multiple longitudinal outcomes and a time-to-event. \emph{Stat Med.}
 \code{\link{pbc2}}, \code{\link{heart.valve}},
   \code{\link{epileptic.qol}}.
 }
-\keyword{data}
-
+\keyword{datasets}

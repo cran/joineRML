@@ -10,9 +10,9 @@
 \item{object}{an object inheriting from class \code{mjoint} for a joint model
 of time-to-event and multivariate longitudinal data.}
 
-\item{process}{character string: if \code{process='Longitudinal'} the fixed
+\item{process}{character string: if \code{process = 'Longitudinal'} the fixed
 effects coefficients from the (multivariate) longitudinal sub-model are
-returned. Else, if \code{process='Event'}, the coefficients from the
+returned. Else, if \code{process = 'Event'}, the coefficients from the
 time-to-event sub-model are returned.}
 
 \item{...}{additional arguments; currently none are used.}
@@ -37,7 +37,7 @@ fit1 <- mjoint(formLongFixed = log.lvmi ~ time + age,
     formSurv = Surv(fuyrs, status) ~ age,
     data = hvd,
     timeVar = "time",
-    control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+    control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 
 fixef(fit1, process = "Longitudinal")
 fixef(fit1, process = "Event")
@@ -63,9 +63,6 @@ fixef(fit2, process = "Longitudinal")
 fixef(fit2, process = "Event")
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \references{
 Pinheiro JC, Bates DM. \emph{Mixed-Effects Models in S and S-PLUS.} New York:
 Springer Verlag; 2000.
@@ -77,5 +74,7 @@ measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 \code{\link[nlme]{fixef}} for the generic method description, and
   \code{\link{ranef.mjoint}}.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{methods}
-

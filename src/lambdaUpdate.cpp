@@ -3,14 +3,15 @@
 
 using namespace Rcpp;
 
-//' Updates of lambda0 (E-step and M-step)
-//'
 //' @keywords internal
 // [[Rcpp::export]]
-arma::mat lambdaUpdate(Rcpp::List b_, Rcpp::List imat_, Rcpp::List zt_,
-                       Rcpp::List pb_, Rcpp::List v_,
-                       arma::mat gam, arma::vec gam_vec, int q, arma::vec nev,
-                       Rcpp::List h_) {
+arma::mat lambdaUpdate(const Rcpp::List& b_, const Rcpp::List& imat_,
+                       const Rcpp::List& zt_, const Rcpp::List& pb_,
+                       const Rcpp::List& v_, const arma::mat& gam,
+                       const arma::vec& gam_vec, const int& q, const arma::vec& nev,
+                       const Rcpp::List& h_) {
+
+  // Updates of lambda0 (E-step and M-step)
 
   arma::vec haz = arma::zeros<arma::vec>(nev.n_elem);
 
@@ -18,11 +19,11 @@ arma::mat lambdaUpdate(Rcpp::List b_, Rcpp::List imat_, Rcpp::List zt_,
   for (int i=0; i<b_.size(); i++) {
 
     // extract matrices from lists for subject i
-    arma::mat b  = Rcpp::as<arma::mat>(b_[i]);
-    arma::mat I  = Rcpp::as<arma::mat>(imat_[i]);
+    arma::mat b = Rcpp::as<arma::mat>(b_[i]);
+    arma::mat I = Rcpp::as<arma::mat>(imat_[i]);
     arma::mat zt = Rcpp::as<arma::mat>(zt_[i]);
-    arma::vec pb  = Rcpp::as<arma::vec>(pb_[i]);
-    arma::vec v  = Rcpp::as<arma::vec>(v_[i]);
+    arma::vec pb = Rcpp::as<arma::vec>(pb_[i]);
+    arma::vec v = Rcpp::as<arma::vec>(v_[i]);
     Rcpp::DataFrame h = Rcpp::as<Rcpp::DataFrame>(h_[i]);
 
     // subjects who are censored before the first failure time
@@ -38,5 +39,7 @@ arma::mat lambdaUpdate(Rcpp::List b_, Rcpp::List imat_, Rcpp::List zt_,
     haz.subvec(0, EexpVstar.n_cols-1) += EexpVstar.t();
 
   }
+
   return(nev / haz);
+
 }

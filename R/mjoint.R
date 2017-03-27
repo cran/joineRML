@@ -1,13 +1,13 @@
 #' Fit a joint model to time-to-event data and multivariate longitudinal data
 #'
-#' This function fits the joint model proposed by Henderson et al. (2000), but
-#' extended to the case of multiple continuous longitudinal measures. The
-#' time-to-event data is modelled using a Cox proportional hazards regression
-#' model with time-varying covariates. The multiple longitudinal outcomes are
-#' modelled using a multivariate version of the Laird and Ware linear mixed
-#' model. The association is captured by a multivariate latent Gaussian process.
-#' The model is estimated using a Monte Carlo Expectation Maximization (MCEM)
-#' algorithm.
+#' @description This function fits the joint model proposed by Henderson et al.
+#'   (2000), but extended to the case of multiple continuous longitudinal
+#'   measures. The time-to-event data is modelled using a Cox proportional
+#'   hazards regression model with time-varying covariates. The multiple
+#'   longitudinal outcomes are modelled using a multivariate version of the
+#'   Laird and Ware linear mixed model. The association is captured by a
+#'   multivariate latent Gaussian process. The model is estimated using a Monte
+#'   Carlo Expectation Maximization (MCEM) algorithm.
 #'
 #' @param formLongFixed a list of formulae for the fixed effects component of
 #'   each longitudinal outcome. The left hand-hand side defines the response,
@@ -27,8 +27,8 @@
 #'   longitudinal outcomes are measured at the same time points for each
 #'   patient, then a \code{data.frame} object can be given instead of a list. It
 #'   is assumed that each data frame is in long format.
-#' @param survData a data.frame in which to interpret the variables named in the
-#'   \code{formSurv}.
+#' @param survData a \code{data.frame} in which to interpret the variables named
+#'   in the \code{formSurv}.
 #' @param timeVar a character string indicating the time variable in the linear
 #'   mixed effects model. If there are multiple longitudinal outcomes and the
 #'   time variable is labelled differently in each model, then a character
@@ -40,44 +40,48 @@
 #' @param verbose logical: if \code{TRUE}, the parameter estimates and other
 #'   convergence statistics are value are printed at each iteration of the MCEM
 #'   algorithm. Default is \code{FALSE}.
-#' @param se.approx logical: if \code{TRUE}, approximate standard errors are
-#'   estimated after the model has converged. Default is \code{TRUE}. See details.
-#' @param postRE logical: if \code{TRUE}, the posterior means and variances of
-#'   the random effects are calculated after the model has converged. Default is
-#'   \code{TRUE}.
+#' @param pfs logical: if \code{TRUE}, then assuming the MCEM algorithm has
+#'   converged, post-fit statistics including the posterior means and variances
+#'   of the random effects, and the approximate standard errors are calculated
+#'   and returned as part of the model object. Default is \code{TRUE}. If
+#'   \code{FALSE}, then these additional calculations are not performed, which
+#'   can reduce the overall computational time. This option is intended to be
+#'   used with computationally intensive routines such as simulation and
+#'   bootstrap standard error estimation where these calculations are not
+#'   required.
 #' @param control a list of control values with components: \describe{
 #'
 #'   \item{\code{nMC}}{integer: the initial number of Monte Carlo samples to be
-#'   used for integration in the early phase of the MCEM. Default is
-#'   \code{nMC=100}.}
+#'   used for integration in the burn-in phase of the MCEM. Default is \code{nMC
+#'   = }\eqn{max(100, 50K)}.}
 #'
 #'   \item{\code{nMCscale}}{integer: the scale factor for the increase in Monte
 #'   Carlo size when Monte Carlo has not reduced from the previous iteration.
-#'   Default is \code{nMCscale=3}.}
+#'   Default is \code{nMCscale = 3}.}
 #'
 #'   \item{\code{nMCmax}}{integer: the maximum number of Monte Carlo samples
-#'   that the algorithm is allowed to reach. Default is \code{nMCmax=20000}.}
+#'   that the algorithm is allowed to reach. Default is \code{nMCmax = 20000}.}
 #'
-#'   \item{\code{earlyPhase}}{integer: the number of iterations for early phase
-#'   of the optimization algorithm. It is computationally inefficient to use a
+#'   \item{\code{burnin}}{integer: the number of iterations for burn-in phase of
+#'   the optimization algorithm. It is computationally inefficient to use a
 #'   large number of Monte Carlo samples early on until one is approximately
-#'   near the maximum likelihood estimate. Default is
-#'   \code{earlyPhase=}\emph{50K}.}
+#'   near the maximum likelihood estimate. Default is \code{burnin =
+#'   }\eqn{100K}.}
 #'
 #'   \item{\code{mcmaxIter}}{integer: the maximum number of MCEM algorithm
-#'   iterations allowed. Default is \code{mcmaxIter=}\emph{(50K+200)}.}
+#'   iterations allowed. Default is \code{mcmaxIter = burnin + 200}.}
 #'
 #'   \item{\code{convCrit}}{character string: the convergence criterion to be
 #'   used. See \strong{Details}.}
 #'
-#'   \item{\code{gammaOpt}}{character string: by default (\code{gammaOpt='NR'}),
-#'   \eqn{\gamma} is updated using a one-step Newton-Raphson iteration, with the
-#'   Hessian matrix calculated exactly. If \code{gammaOpt='GN'}, a Gauss-Newton
-#'   algorithm-type iteration is implemented, where the Hessian matrix is
-#'   approximated based on calculations similar to those used for calculating
-#'   the empirical information matrix? If it is used, then the step-length is
-#'   adjusted by a nominal scaling parameter of 0.5 in order to reduce the
-#'   chance of over-shooting the maximizer.}
+#'   \item{\code{gammaOpt}}{character string: by default (\code{gammaOpt =
+#'   'NR'}), \eqn{\gamma} is updated using a one-step Newton-Raphson iteration,
+#'   with the Hessian matrix calculated exactly. If \code{gammaOpt = 'GN'}, a
+#'   Gauss-Newton algorithm-type iteration is implemented, where the Hessian
+#'   matrix is approximated based on calculations similar to those used for
+#'   calculating the empirical information matrix? If it is used, then the
+#'   step-length is adjusted by a nominal scaling parameter of 0.5 in order to
+#'   reduce the chance of over-shooting the maximizer.}
 #'
 #'   \item{\code{tol0}}{numeric: tolerance value for convergence in the
 #'   parameters; see \strong{Details}. Default is \code{5e-03}.}
@@ -93,10 +97,10 @@
 #'   initial parameters are those from the MV-LMM, which is estimated using a
 #'   separate EM algorithm. Since both the E- and M-steps are available in
 #'   closed-form, this algorithm convergences relatively rapidly with a high
-#'   precision. Default is \code{1e-05}.}
+#'   precision. Default is min(\code{1e-04}, \code{tol2}).}
 #'
-#'   \item{\code{rav}}{numeric: threshold when using \code{convCrit='sas'} that
-#'   applies absolute change (when <\code{rav}) or relative change (when
+#'   \item{\code{rav}}{numeric: threshold when using \code{convCrit = 'sas'}
+#'   that applies absolute change (when <\code{rav}) or relative change (when
 #'   \eqn{\geq}\code{rav}) criterion; see \strong{Details}. Default is
 #'   \code{0.1}, which is an order of magnitude higher than the SAS
 #'   implementation.}
@@ -165,7 +169,7 @@
 #'   Due to the Monte Caro error, the algorithm could spuriously declare
 #'   convergence. Therefore, we require convergence to be satisfied for 3
 #'   consecutive iterations. The algorithm starts with a low number of Monte
-#'   Carlo samples in the early phase, as it would be computationally
+#'   Carlo samples in the burn-in phase, as it would be computationally
 #'   inefficient to use a large sample whilst far away from the true maximizer.
 #'   After the algorithm moves out of the adaptive phase, it uses an automated
 #'   criterion based on the coefficient of variation of the relative parameter
@@ -175,16 +179,16 @@
 #'
 #' @section Standard error estimation:
 #'
-#'   Approximate standard errors (SEs) can be calculated (if
-#'   \code{se.approx=TRUE}). These are based on the empirical observed
-#'   information function (McLachlan & Krishnan, 2008). Through simulation
-#'   studies, we have found that this approximation does not work particularly
-#'   well for \emph{n}<100 (where \emph{n} is the number of subjects). In these
-#'   cases, one would need to appeal to the bootstrap SE estimation approach.
-#'   However, in practice, the reliability of the approximate SEs will depend of
-#'   a mulitude of factors, including but not limited to, the average number of
-#'   repeated measurements per subject, the total number of events, and the
-#'   convergence of the MCEM algorithm.
+#'   Approximate standard errors (SEs) are calculated (if \code{pfs = TRUE}).
+#'   These are based on the empirical observed information function (McLachlan &
+#'   Krishnan, 2008). Through simulation studies, we have found that this
+#'   approximation does not work particularly well for \eqn{n < 100} (where
+#'   \eqn{n} is the number of subjects). In these cases, one would need to
+#'   appeal to the bootstrap SE estimation approach. However, in practice, the
+#'   reliability of the approximate SEs will depend of a multitude of factors,
+#'   including but not limited to, the average number of repeated measurements
+#'   per subject, the total number of events, and the convergence of the MCEM
+#'   algorithm.
 #'
 #'   Bootstrap SEs are also available, however they are not calculated using the
 #'   \code{mjoint} function due to the intense computational time. Instead, a
@@ -221,14 +225,14 @@
 #' multivariate frailty models using an automated Monte Carlo EM algorithm.
 #' \emph{Lifetime Data Anal.} 2002; \strong{8}: 349-360.
 #'
-#' #' Wei GC, Tanner MA. A Monte Carlo implementation of the EM algorithm and the
+#' Wei GC, Tanner MA. A Monte Carlo implementation of the EM algorithm and the
 #' poor man's data augmentation algorithms. \emph{J Am Stat Assoc.} 1990;
 #' \strong{85(411)}: 699-704.
 #'
 #' Wulfsohn MS, Tsiatis AA. A joint model for survival and longitudinal data
 #' measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 #'
-#' @import stats
+#' @import stats survival
 #'
 #' @return An object of class \code{mjoint}. See \code{\link{mjoint.object}} for
 #'   details.
@@ -247,7 +251,7 @@
 #'     formSurv = Surv(fuyrs, status) ~ age,
 #'     data = hvd,
 #'     timeVar = "time",
-#'     control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+#'     control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 #' summary(fit1)
 #'
 #' \dontrun{
@@ -299,8 +303,8 @@
 #' summary(fit.joineR)
 #' }
 mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NULL,
-                   timeVar, inits = NULL, verbose = FALSE,
-                   se.approx = TRUE, postRE = TRUE, control = list(), ...) {
+                   timeVar, inits = NULL, verbose = FALSE, pfs = TRUE,
+                   control = list(), ...) {
 
   #*****************************************************
   # Preamble
@@ -308,15 +312,6 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
   Call <- match.call()
   balanced <- FALSE # assume unless proven o/w
-
-  # package dependencies
-  pkgs <- c("nlme", "Matrix", "survival")
-  for (i in pkgs) {
-    test <- require(i, character.only = TRUE)
-    if (!test) {
-      stop(paste("mjoint requires the package", i))
-    }
-  }
 
   # formulas do not need to be given as lists if K=1
   if (!is.list(formLongFixed)) {
@@ -360,18 +355,34 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   for (k in 1:K) {
     data[[k]] <- data[[k]][order(xtfrm(data[[k]][, id]), data[[k]][, timeVar[k]]), ]
     data[[k]][, id] <- as.factor(data[[k]][, id])
+    data[[k]] <- droplevels(data[[k]])
+  }
+
+  # check the same patients measured at least once for each marker
+  if (K > 1) {
+    uniq.ids <- list(sort(unique(data[[1]][, id])))
+    for (k in 2:K) {
+      uniq.ids[[k]] <- sort(unique(data[[k]][, id]))
+      if (!identical(uniq.ids[[k - 1]], uniq.ids[[k]])) {
+        stop("Every subject must have at least one measurement per each outcome")
+      }
+    }
   }
 
   #*****************************************************
   # Control parameters
   #*****************************************************
 
-  con <- list(nMC = 100, nMCscale = 3, nMCmax = 20000, earlyPhase = 50*K,
-              mcmaxIter = 50*K + 200, convCrit = "sas", gammaOpt = "NR",
-              tol0 = 5e-03, tol1 = 1e-03, tol2 = 5e-03, tol.em = 1e-05, rav = 0.1)
+  con <- list(nMC = max(100, 50*K), nMCscale = 3, nMCmax = 20000, burnin = 100*K,
+              mcmaxIter = 100*K + 200, convCrit = "sas", gammaOpt = "NR",
+              tol0 = 5e-03, tol1 = 1e-03, tol2 = 5e-03, tol.em = 1e-04, rav = 0.1)
   nc <- names(con)
   control <- c(control, list(...))
   con[(conArgs <- names(control))] <- control
+  if (("burnin" %in% names(control)) && !("mcmaxIter" %in% names(control))) {
+    con$mcmaxIter <- con$burnin + 200
+  }
+  con$tol.em <- min(con$tol.em, con$tol2)
 
   if (length(unmatched <- conArgs[!(conArgs %in% nc)]) > 0) {
     warning("Unknown arguments passed to 'control': ", paste(unmatched, collapse = ", "))
@@ -382,6 +393,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   #*****************************************************
 
   lfit <- list()
+  mf.fixed <- list()
   yik <- list()
   Xik <- list()
   nk <- vector(length = K)
@@ -398,9 +410,12 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
                            control = nlme::lmeControl(opt = "optim"))
     lfit[[k]]$call$fixed <- eval(lfit[[k]]$call$fixed)
 
+    # Model frames
+    mf.fixed[[k]] <- model.frame(lfit[[k]]$terms,
+                                 data[[k]][, all.vars(formLongFixed[[k]])])
+
     # Longitudinal outcomes
-    yik[[k]] <- by(data[[k]][, all.vars(formLongFixed[[k]])[1]], data[[k]][, id],
-                   as.vector)
+    yik[[k]] <- by(model.response(mf.fixed[[k]], "numeric"), data[[k]][, id], as.vector)
 
     # X design matrix
     Xik[[k]] <- data.frame("id" = data[[k]][, id],
@@ -439,14 +454,30 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   },
   USE.NAMES = TRUE, simplify = FALSE)
 
-  Xit <- lapply(Xi, t)
-
   Zi <- sapply(names(Zik.list[[1]]), function(i) {
     as.matrix(Matrix::bdiag(lapply(Zik.list, "[[", i)))
   },
   USE.NAMES = TRUE, simplify = FALSE)
 
   Zit <- lapply(Zi, t)
+
+  # # t(X) %*% X [summed over i and inverted]
+  XtXi <- lapply(Xi, crossprod)
+  XtX.inv <- solve(Reduce("+", XtXi))
+
+  # t(X) %*% y [for each i]
+  Xtyi <- mapply(function(x, y) {
+    crossprod(x, y)
+  },
+  x = Xi, y = yi,
+  SIMPLIFY = FALSE)
+
+  # t(X) %*% Z [for each i]
+  XtZi <- mapply(function(x, z) {
+    crossprod(x, z)
+  },
+  x = Xi, z = Zi,
+  SIMPLIFY = FALSE)
 
   nik <- sapply(names(nik.list[[1]]), function(i) {
     unlist(lapply(nik.list, "[[", i))
@@ -462,9 +493,9 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     ncol(Zik[[i]]) - 1
   })
 
-  l <- list(yi = yi, Xi = Xi, Xit = Xit, Zi = Zi, Zit = Zit, nik = nik,
-            yik = yik, Xik.list = Xik.list, Zik.list = Zik.list,
-            p = p, r = r, K = K, n = n, nk = nk)
+  l <- list(yi = yi, Xi = Xi, Zi = Zi, Zit = Zit, nik = nik, yik = yik,
+            Xik.list = Xik.list, Zik.list = Zik.list, XtX.inv = XtX.inv,
+            Xtyi = Xtyi, XtZi = XtZi, p = p, r = r, K = K, n = n, nk = nk)
 
   #*****************************************************
   # Time-to-event data
@@ -496,7 +527,9 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
       unlist(u[, 2:(q+1)])
     })
   } else {
-    V <- by(survdat2, survdat2$id, function(u) 0)
+    V <- by(survdat2, survdat2$id, function(u) {
+      0
+    })
   }
 
   # Collect together as inputs for EM algorithm
@@ -582,7 +615,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     }
   }
 
-  inits.long <- initsLong(lfit = lfit, inits = inits, l = l, z = z, K = K, p = p,
+  inits.long <- initsLong(lfit = lfit, inits = inits, l = l, z = z, K = K, p = p, r = r,
                           tol.em = con$tol.em, verbose = verbose)
 
   inits.surv <- initsSurv(data = data, lfit = lfit, sfit = sfit, survdat2 = survdat2,
@@ -623,7 +656,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
     stepUpdate <- stepEM(theta = theta, l = l, t = t, z = z,
                          nMC = nMC, verbose = verbose, gammaOpt = con$gammaOpt,
-                         postRE = FALSE, se.approx = FALSE)
+                         pfs = FALSE)
     theta.new <- stepUpdate$theta.new
     log.lik.new <- stepUpdate$ll
     ll.hx[it] <- log.lik.new
@@ -642,16 +675,16 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     Delta.vec[it] <- conv.status$max.reldelta.pars
     log.lik <- log.lik.new
 
-    if (it >= con$earlyPhase) {
+    if (it >= con$burnin) {
       # require convergence condition to be satisfied 3 iterations
-      # in a row + cannot converge during early stage
+      # in a row + cannot converge during burn-in stage
       conv <- all(conv.track[(it-2):it])
     } else {
       conv <- FALSE
     }
 
     # Ripatti decision-rule for nMC increase using CV statistics
-    if (it >= con$earlyPhase && !conv) {
+    if (it >= con$burnin && !conv) {
       cv <- sd(Delta.vec[(it-2):it]) / mean(Delta.vec[(it-2):it])
       if (verbose) {
         cat(paste("CV statistic (old) =", round(cv.old, 6), "\n"))
@@ -669,18 +702,13 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
     # Once converged: calculate SEs and posterior REs (means + variances)
     if (conv) {
+      message("EM algorithm has converged!\n")
       theta <- theta.new
-      if (postRE || se.approx) {
-        message("EM algorithm has converged!\n")
-        if (postRE) {
-          message("Estimating posterior random effects...\n")
-        }
-        if (se.approx) {
-          message("Estimating approximate standard errors...\n")
-        }
+      if (pfs) {
+        message("Calculating post model fit statistics...\n")
         postFitCalcs <- stepEM(theta = theta, l = l, t = t, z = z,
                                nMC = nMC, verbose = FALSE, gammaOpt = "NR",
-                               postRE = postRE, se.approx = se.approx)
+                               pfs = TRUE)
       }
       break
     } else {
@@ -711,8 +739,13 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   hx.haz <- sapply(all.iters, function(x) x$haz)
   rownames(hx.haz) <- paste0("haz_", 1:nrow(hx.haz))
   hx.sigma2 <- sapply(all.iters, function(x) x$sigma2)
+  if (K == 1) {
+    hx.sigma2 <- matrix(hx.sigma2, nrow = 1)
+  }
   if (K > 1) {
     rownames(hx.sigma2) <- paste0("sigma2_", 1:K)
+  } else {
+    rownames(hx.sigma2) <- "sigma2"
   }
 
   # Output
@@ -734,15 +767,12 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   out$log.lik <- log.lik
   out$ll.hx <- ll.hx
   out$control <- con
-  out$finalnMC <- nMC # not same as control nMC (used for early phase)
-  if (conv && se.approx) {
-    out$vcov <- postFitCalcs$ses
-    out$SE.approx <- sqrt(diag(solve(out$vcov)))
-  }
-  if (conv && postRE) {
-    out$log.lik <- postFitCalcs$ll
+  out$finalnMC <- nMC # not same as control nMC (used for burn-in phase)
+  if (conv && pfs) {
+    out$Hessian <- postFitCalcs$H
     out$Eb <- postFitCalcs$Eb # Posterior RE means
     out$Vb <- postFitCalcs$Vb # Posterior RE variances
+    out$dmats <- list(l = l, t = t, z = z)
   }
   out$call <- Call
   out$conv <- conv

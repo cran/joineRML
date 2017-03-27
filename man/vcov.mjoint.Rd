@@ -20,15 +20,15 @@ otherwise returns the variance-covariance matrix (default).}
 A variance-covariance matrix.
 }
 \description{
-Extract an approximate variance-covariance matrix of estimated parameters
-from an \code{mjoint} object
+Returns the variance-covariance matrix of the main parameters of
+  a fitted \code{mjoint} model object.
 }
 \details{
 This is a generic function that extracts the variance-covariance
   matrix of parameters from an \code{mjoint} model fit. It is based on a
   profile likelihood, so no estimates are given for the baseline hazard
   function, which is generally considered a nuisance parameter. It is based
-  on the empiricial information matrix (see Lin et al. 2002, and McLachlan
+  on the empirical information matrix (see Lin et al. 2002, and McLachlan
   and Krishnan 2008 for details), so is only approximate.
 }
 \note{
@@ -49,7 +49,7 @@ fit1 <- mjoint(formLongFixed = log.lvmi ~ time + age,
     formSurv = Surv(fuyrs, status) ~ age,
     data = hvd,
     timeVar = "time",
-    control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+    control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 
 vcov(fit1)
 
@@ -73,9 +73,6 @@ fit2 <- mjoint(
 vcov(fit2)
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \references{
 Lin H, McCulloch CE, Mayne ST. Maximum likelihood estimation in the joint
 analysis of time-to-event and multiple longitudinal variables. \emph{Stat
@@ -89,5 +86,7 @@ Edition. Wiley-Interscience; 2008.
   \code{\link[stats]{cov2cor}} for details of efficient scaling of a
   covariance matrix into the corresponding correlation matrix.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{methods}
-

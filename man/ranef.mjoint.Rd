@@ -16,9 +16,10 @@ distribution is also returned.}
 \item{...}{additional arguments; currently none are used.}
 }
 \value{
-A numeric matrix with rows denoting the individuals and columns the
-  random effects (e.g., intercepts, slopes, etc.). If \code{postVar=TRUE},
-  the numeric matrix has an extra attribute ``postVar".
+A \code{data.frame} (also of class \code{ranef.mjoint}) with rows
+  denoting the individuals and columns the random effects (e.g., intercepts,
+  slopes, etc.). If \code{postVar = TRUE}, the numeric matrix has an extra
+  attribute ``postVar".
 }
 \description{
 Extract random effects estimates from an \code{mjoint} object.
@@ -44,9 +45,6 @@ fit2 <- mjoint(
 ranef(fit2)
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \references{
 Pinheiro JC, Bates DM. \emph{Mixed-Effects Models in S and S-PLUS.} New York:
 Springer Verlag; 2000.
@@ -56,7 +54,10 @@ measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 }
 \seealso{
 \code{\link[nlme]{ranef}} for the generic method description, and
-  \code{\link{fixef.mjoint}}.
+  \code{\link{fixef.mjoint}}. To plot \code{ranef.mjoint} objects, see
+  \code{\link{plot.ranef.mjoint}}.
+}
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
 }
 \keyword{methods}
-

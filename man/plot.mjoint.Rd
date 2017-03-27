@@ -10,7 +10,7 @@
 \item{x}{an object inheriting from class \code{mjoint} for a joint model of
 time-to-event and multivariate longitudinal data.}
 
-\item{type}{currently the only option is \code{type='convergence'} for
+\item{type}{currently the only option is \code{type = 'convergence'} for
 graphical examination of convergence over MCEM iteration.}
 
 \item{...}{other parameters passed to \code{\link{plotConvergence}}.}
@@ -31,7 +31,7 @@ fit1 <- mjoint(formLongFixed = log.lvmi ~ time + age,
     formSurv = Surv(fuyrs, status) ~ age,
     data = hvd,
     timeVar = "time",
-    control = list(nMCscale = 2, earlyPhase = 5)) # controls for illustration only
+    control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 
 plot(fit1, param = "beta")  # LMM fixed effect parameters
 plot(fit1, param = "gamma") # event model parameters
@@ -51,18 +51,18 @@ fit2 <- mjoint(
     data = list(hvd, hvd),
     inits = list("gamma" = c(0.11, 1.51, 0.80)),
     timeVar = "time",
+    control = list(burnin = 50),
     verbose = TRUE)
 
 plot(fit2, type = "convergence", params = "gamma")
 }
 }
-\author{
-Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
-}
 \seealso{
 \code{\link[graphics]{plot.default}}, \code{\link[graphics]{par}},
   \code{\link[graphics]{abline}}.
 }
+\author{
+Graeme L. Hickey (\email{graeme.hickey@liverpool.ac.uk})
+}
 \keyword{dplot}
 \keyword{methods}
-
