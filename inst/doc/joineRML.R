@@ -37,11 +37,14 @@ head(ranef(fit))
 plot(fit, params = "gamma")
 plot(fit, params = "beta")
 
-## ----hvd_model_boot_print------------------------------------------------
-fit.se
+## ----hvd_model_boot, eval=FALSE------------------------------------------
+#  fit.se <- bootSE(fit, nboot = 100)
 
-## ----hvd_model_boot_summary----------------------------------------------
-summary(fit, bootSE = fit.se)
+## ----hvd_model_boot_print, eval=FALSE------------------------------------
+#  fit.se
+
+## ----hvd_model_boot_summary, eval=FALSE----------------------------------
+#  summary(fit, bootSE = fit.se)
 
 ## ----re_comp_plot, fig.width=7.25, fig.height=4--------------------------
 id <- as.numeric(row.names(fit.joiner$coefficients$random))
