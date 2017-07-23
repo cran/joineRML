@@ -22,13 +22,14 @@
 #'   \code{\link[survival]{coxph}} for examples.
 #' @param data a list of \code{data.frame} objects for each longitudinal outcome
 #'   in which to interpret the variables named in the \code{formLongFixed} and
-#'   \code{formLongRandom}. The list structure enables one to include multiple
-#'   longitudinal outcomes with different measurement protocols. If the multiple
-#'   longitudinal outcomes are measured at the same time points for each
-#'   patient, then a \code{data.frame} object can be given instead of a list. It
-#'   is assumed that each data frame is in long format.
+#'   \code{formLongRandom}. The \code{list} structure enables one to include
+#'   multiple longitudinal outcomes with different measurement protocols. If the
+#'   multiple longitudinal outcomes are measured at the same time points for
+#'   each patient, then a \code{data.frame} object can be given instead of a
+#'   \code{list}. It is assumed that each data frame is in long format.
 #' @param survData a \code{data.frame} in which to interpret the variables named
-#'   in the \code{formSurv}.
+#'   in the \code{formSurv}. This is optional, and if not given, the required
+#'   data is searched for in \code{data}. Default is \code{survData=NULL}.
 #' @param timeVar a character string indicating the time variable in the linear
 #'   mixed effects model. If there are multiple longitudinal outcomes and the
 #'   time variable is labelled differently in each model, then a character
@@ -101,7 +102,7 @@
 #'
 #'   \item{\code{rav}}{numeric: threshold when using \code{convCrit='sas'} that
 #'   applies absolute change (when \eqn{<}\code{rav}) or relative change (when
-#'   \eqn{\geq}\code{rav}) criterion; see \strong{Details}. Default is
+#'   \eqn{\ge}\code{rav}) criterion; see \strong{Details}. Default is
 #'   \code{0.1}, which is an order of magnitude higher than the SAS
 #'   implementation.}
 #'
@@ -286,21 +287,20 @@
 #'     formLongRandom = list("log.bil" = ~ 1 | id),
 #'     formSurv = Surv(years, status2) ~ age,
 #'     data = pbc2,
-#'     timeVar = "year",
-#'     control = list(convCrit = "sas", rav = 0.01),
-#'     verbose = TRUE)
+#'     timeVar = "year")
 #' summary(fit.joineRML)
 #'
 #' # joineR package
-#' pbc.surv <- UniqueVariables(pbc2, var.col = c("years","status2"), id.col = "id")
+#' pbc.surv <- UniqueVariables(pbc2, var.col = c("years", "status2"),
+#'                             id.col = "id")
 #' pbc.long <- pbc2[, c("id", "year", "log.b")]
-#' pbc.cov <- UniqueVariables(pbc2, c("age", "drug"), id.col = "id")
+#' pbc.cov <- UniqueVariables(pbc2, "age", id.col = "id")
 #' pbc.jd <- jointdata(longitudinal = pbc.long, baseline = pbc.cov,
 #'                     survival = pbc.surv, id.col = "id", time.col = "year")
 #' fit.joineR <- joint(data = pbc.jd,
 #'     long.formula = log.b ~ 1 + year,
 #'     surv.formula = Surv(years, status2) ~ age,
-#'     model = "intslope")
+#'     model = "int")
 #' summary(fit.joineR)
 #' }
 mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NULL,
@@ -311,6 +311,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   # Preamble
   #*****************************************************
 
+  time.start <- Sys.time()
   Call <- match.call()
   balanced <- FALSE # assume unless proven o/w
 
@@ -515,8 +516,11 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   nev.uniq <- length(tj)
 
   survdat2 <- data.frame(survdat[, id], sfit$x, sfit$y[, 1], sfit$y[, 2])
+  xcenter <- NULL
   if (q > 0) {
-    survdat2[2:(q + 1)] <- scale(survdat2[2:(q + 1)], scale = FALSE)
+    xcenter <- apply(survdat2[2:(q + 1)], 2, mean)
+    survdat2[2:(q + 1)] <- scale(survdat2[2:(q + 1)],
+                                 center = xcenter, scale = FALSE)
   }
   colnames(survdat2)[c(1, (q + 2):(q + 3))] <- c("id", "T", "delta")
   survdat2$tj.ind <- sapply(1:n, function(i) {
@@ -535,9 +539,10 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
   # Collect together as inputs for EM algorithm
   t <- list(V = V, survdat2 = survdat2, survdat2.list = survdat2.list,
-            q = q, nev = nev, nev.uniq = nev.uniq)
+            q = q, nev = nev, nev.uniq = nev.uniq, xcenter = xcenter,
+            tj = tj)
 
-  # # Longitudinal data should not be recorded *after* event time
+  # Longitudinal data should not be recorded *after* event time
   for (k in 1:K) {
     for (i in survdat2$id) {
       if (max(data[[k]][data[[k]][, id] == i, timeVar[k]]) > survdat2[survdat2$id == i, "T"]) {
@@ -643,7 +648,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   Delta.vec <- rep(NA, con$mcmaxIter)
   ll.hx <- rep(NA, con$mcmaxIter)
   cv.old <- 0
-  time.start <- Sys.time()
+  time.em.start <- Sys.time()
 
   nMC <- con$nMC
   nmc.iters <- c()
@@ -751,7 +756,10 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     rownames(hx.sigma2) <- "sigma2"
   }
 
+  #*****************************************************
   # Output
+  #*****************************************************
+
   out <- list("coefficients" = theta.new)
   out$history <- rbind(hx.beta, hx.gamma, hx.sigma2, hx.D, hx.haz)
   out$nMC.hx <- nmc.iters
@@ -782,11 +790,14 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
   # Time
   time.end <- Sys.time()
-  time.diff <- time.end - time.start
+  time.diff <- c("Total" = time.end - time.start,
+                 "EM" = time.end - time.em.start)
   out$comp.time <- time.diff
   if (verbose) {
-    cat(paste("EM algorithm took", round(as.numeric(time.diff), 1),
-              attr(time.diff, "units"), "\n\n"))
+    cat(paste("Total time taken:", round(as.numeric(time.diff[1]), 1),
+              attr(time.diff[1], "units"), "\n"))
+    cat(paste("EM algorithm took", round(as.numeric(time.diff[2]), 1),
+              attr(time.diff[2], "units"), "\n\n"))
   }
 
   class(out) <- "mjoint"

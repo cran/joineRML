@@ -25,14 +25,15 @@ model (not including the latent association structure). See
 
 \item{data}{a list of \code{data.frame} objects for each longitudinal outcome
 in which to interpret the variables named in the \code{formLongFixed} and
-\code{formLongRandom}. The list structure enables one to include multiple
-longitudinal outcomes with different measurement protocols. If the multiple
-longitudinal outcomes are measured at the same time points for each
-patient, then a \code{data.frame} object can be given instead of a list. It
-is assumed that each data frame is in long format.}
+\code{formLongRandom}. The \code{list} structure enables one to include
+multiple longitudinal outcomes with different measurement protocols. If the
+multiple longitudinal outcomes are measured at the same time points for
+each patient, then a \code{data.frame} object can be given instead of a
+\code{list}. It is assumed that each data frame is in long format.}
 
 \item{survData}{a \code{data.frame} in which to interpret the variables named
-in the \code{formSurv}.}
+in the \code{formSurv}. This is optional, and if not given, the required
+data is searched for in \code{data}. Default is \code{survData=NULL}.}
 
 \item{timeVar}{a character string indicating the time variable in the linear
 mixed effects model. If there are multiple longitudinal outcomes and the
@@ -110,7 +111,7 @@ required.}
 
   \item{\code{rav}}{numeric: threshold when using \code{convCrit='sas'} that
   applies absolute change (when \eqn{<}\code{rav}) or relative change (when
-  \eqn{\geq}\code{rav}) criterion; see \strong{Details}. Default is
+  \eqn{\ge}\code{rav}) criterion; see \strong{Details}. Default is
   \code{0.1}, which is an order of magnitude higher than the SAS
   implementation.}
 
@@ -275,21 +276,20 @@ fit.joineRML <- mjoint(
     formLongRandom = list("log.bil" = ~ 1 | id),
     formSurv = Surv(years, status2) ~ age,
     data = pbc2,
-    timeVar = "year",
-    control = list(convCrit = "sas", rav = 0.01),
-    verbose = TRUE)
+    timeVar = "year")
 summary(fit.joineRML)
 
 # joineR package
-pbc.surv <- UniqueVariables(pbc2, var.col = c("years","status2"), id.col = "id")
+pbc.surv <- UniqueVariables(pbc2, var.col = c("years", "status2"),
+                            id.col = "id")
 pbc.long <- pbc2[, c("id", "year", "log.b")]
-pbc.cov <- UniqueVariables(pbc2, c("age", "drug"), id.col = "id")
+pbc.cov <- UniqueVariables(pbc2, "age", id.col = "id")
 pbc.jd <- jointdata(longitudinal = pbc.long, baseline = pbc.cov,
                     survival = pbc.surv, id.col = "id", time.col = "year")
 fit.joineR <- joint(data = pbc.jd,
     long.formula = log.b ~ 1 + year,
     surv.formula = Surv(years, status2) ~ age,
-    model = "intslope")
+    model = "int")
 summary(fit.joineR)
 }
 }

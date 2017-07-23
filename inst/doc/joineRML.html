@@ -12,7 +12,7 @@
 
 <meta name="author" content="Graeme L. Hickey" />
 
-<meta name="date" content="2017-05-01" />
+<meta name="date" content="2017-07-23" />
 
 <title>joineRML</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">joineRML</h1>
 <h4 class="author"><em>Graeme L. Hickey</em></h4>
-<h4 class="date"><em>2017-05-01</em></h4>
+<h4 class="date"><em>2017-07-23</em></h4>
 
 
 
@@ -196,7 +196,7 @@ fit &lt;-<span class="st"> </span><span class="kw">mjoint</span>(
 ## time_2            0.0036944     -0.006278  0.0024684
 ##   Standard Deviations: 0.32527 0.34492 0.049683 
 ## 
-## Residual standard errors:
+## Residual standard errors(s):
 ##  sigma2_1  sigma2_2 
 ## 0.5961137 0.1927721 
 ## 
@@ -219,7 +219,8 @@ fit &lt;-<span class="st"> </span><span class="kw">mjoint</span>(
 ## gamma_2 0.7968  0.6469  1.2316  0.2181
 ## 
 ## Algorithm Summary:
-##     EM algorithm computational time: 1.2 mins 
+##     Total computational time: 1.2 mins 
+##     EM algorithm computational time: NA mins 
 ##     Convergence status: converged
 ##     Convergence criterion: sas 
 ##     Final Monte Carlo sample size: 5549 
@@ -285,7 +286,7 @@ fit &lt;-<span class="st"> </span><span class="kw">mjoint</span>(
 </div>
 <div id="bootstrap-standard-errors" class="section level2">
 <h2>Bootstrap standard errors</h2>
-<p>Once an <code>mjoint</code> model has converged, and assuming the <code>se.approx</code> argument is <code>TRUE</code> (default), then approximated standard errors are calculated based on the empirical information matrix of the profile likelihood at the maximizer. Theoretically, these standard errors will be underestimated (see the technical vignette). In principle, residual Monte Carlo error will oppose this through an increase in uncertainty.</p>
+<p>Once an <code>mjoint</code> model has converged, and assuming the <code>pfs</code> argument is <code>TRUE</code> (default), then approximated standard errors are calculated based on the empirical information matrix of the profile likelihood at the maximizer. Theoretically, these standard errors will be underestimated (see the technical vignette). In principle, residual Monte Carlo error will oppose this through an increase in uncertainty.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit.se &lt;-<span class="st"> </span><span class="kw">bootSE</span>(fit, <span class="dt">nboot =</span> <span class="dv">100</span>)</code></pre></div>
 <p>Bootstrapping is a computationally intensive method, possibly taking many hours to fit. For this reason, one can relax the control parameter constraints on the optimization algorithm for each bootstrap model; however, this will be at the possible expense of inflated standard errors due to Monte Carlo error.</p>
 <p>We can call the <code>bootSE</code> object to interrogate it</p>
@@ -296,7 +297,7 @@ fit &lt;-<span class="st"> </span><span class="kw">mjoint</span>(
 </div>
 <div id="univariate-joint-models-joinerml-versus-joiner" class="section level1">
 <h1>Univariate joint models: <code>joineRML</code> versus <code>joineR</code></h1>
-<p>There are a growing number of software options for fitting joint models of a single longitudinal outcome and a single time-to-event outcome; what we call here <em>univariate</em> joint models. <code>joineR</code> (version 1.0-3) is one package available in R for fitting such models, however <code>joineRML</code> can fit these models too, since the univariate model is simply a special case of the multivariate model. It is useful to contrast these two packages. There are theoretical and practical implementation differences between the packages beyond just univariate versus multivariate capability:</p>
+<p>There are a growing number of software options for fitting joint models of a single longitudinal outcome and a single time-to-event outcome; what we call here <em>univariate</em> joint models. <code>joineR</code> (version 1.1.0) is one package available in R for fitting such models, however <code>joineRML</code> can fit these models too, since the univariate model is simply a special case of the multivariate model. It is useful to contrast these two packages. There are theoretical and practical implementation differences between the packages beyond just univariate versus multivariate capability:</p>
 <ul>
 <li><p><code>joineR</code> uses Gauss-Hermite quadrature (with 3 nodes) for numerical integration, whereas <code>joineRML</code> uses Monte Carlo integration with an automated selection of sample size.</p></li>
 <li><p><code>joineR</code> only allows for random-intercept models, random-intercept and random-slope models, or a quadratic model. <code>joineRML</code>, on the other hand, allows for any random effects structure.</p></li>

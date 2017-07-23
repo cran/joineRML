@@ -23,7 +23,8 @@ A list with the following components. \describe{
   linear mixed effects sub-model.}
 
   \item{\code{haz}}{the estimated baseline hazard values for each unique
-  failure time.}
+  failure time. Note that this is the \emph{centered} hazard, equivalent to
+  that returned by \code{\link[survival]{coxph.detail}}.}
 
   \item{\code{gamma}}{the vector of baseline covariates for the survival
   model and the latent association coefficient parameter estimates.}
@@ -104,8 +105,10 @@ A list with the following components. \describe{
   \item{\code{conv}}{logical: did the MCEM algorithm converge within the
   specified maximum number of iterations?}
 
-  \item{\code{comp.time}}{an object of class \code{difftime} that reports the
-  time taken for model fitting.}
+  \item{\code{comp.time}}{a vector of length 2 with each element an object of
+  class \code{difftime} that reports the \emph{total} time taken for model
+  fitting (including all stages) and the time spent in the \emph{EM
+  algorithm}.}
 
   }
 }
@@ -116,7 +119,7 @@ An object returned by the \code{mjoint} function, inheriting
   have methods for the generic functions \code{coef}, \code{logLik},
   \code{plot}, \code{print}, \code{ranef}, \code{fixef}, \code{summary},
   \code{AIC}, \code{getVarCov}, \code{vcov}, \code{confint}, \code{sigma},
-  and \code{formula}.
+  \code{fitted}, \code{residuals}, and \code{formula}.
 }
 \section{Post model fit statistics}{
 
@@ -138,11 +141,11 @@ An object returned by the \code{mjoint} function, inheriting
   for the random effects values for each subject.}
 
   \item{\code{dmats}}{a list of length 3 containing the design matrices, data
-  frames, and vectors used in the MCEM algorithm. These are required to
-  calculated the residuals. The 3 items in the list are \code{l}
-  (longitudinal data), \code{t} (time-to-event data), and \code{z} (design
-  matrices expanded over unique failure times). These are not intended to be
-  extracted by the user.}}
+  frames, and vectors used in the MCEM algorithm. These are required for
+  prediction and to calculate the residuals and . The 3 items in the list are
+  \code{l} (longitudinal data), \code{t} (time-to-event data), and \code{z}
+  (design matrices expanded over unique failure times). These are not
+  intended to be extracted by the user.}}
 }
 
 \seealso{

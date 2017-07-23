@@ -1,3 +1,35 @@
+# joineRML 0.3.0
+
+## New features
+
+* Added new functions `dynSurv()` and `dynLong()`, which generates survival probabilities and xpected longitudinal predictions, respectively, for a new subject conditional on their last measurement time and longitudial history. Prediction can be implemented using either a first order approximation or a Monte Carlo simulation approach.
+
+* Added an associated `print()` method for `dynSurv` and `dynLong` objects.
+
+* Added an associated `plot()` method for `dynSurv` and `dynLong` objects.
+
+* Added a function `baseHaz()` for extracting the centered and uncetered estimates of the baseline hazard function.
+
+* `print()` and `summary()` now report the total computation time in addition to just the EM algorithm time. This was deemed useful after some examples showed that the time to get initial values was more expensive than the time for the MCEM algorithm to converge.
+
+## Bug patches
+
+* Fixed a bug that prevented models being fitted with no covariates in the survival sub-model, i.e. `Surv() ~ 1`.
+
+* Correction to the vignette description of `mjoint()` arguments.
+
+* Removed `enumintem` package for Sweave vignette to satisfy CRAN checks on macOS (release).
+
+## Housekeeping
+
+* Updated `Makevars` and `Markvars.win` to allow for OpenMP, which can be used by RcppArmadillo.
+
+* Minor tidy-up of in-code comments.
+
+* Minor updates and corrections to documentation.
+
+* Added unit tests for new features.
+
 # joineRML 0.2.2
 
 * This update is an attempt to overcome a FAIL status on the CRAN checks for macOS.
@@ -14,7 +46,7 @@
 
 ## Bug patches
 
-* Fixed a bug that prevented factors with >2 levels being included in the time-to-event submodel.
+* Fixed a bug that prevented factors with >2 levels being included in the time-to-event sub-model.
 
 * Fixed package registration, which strangely broke on R 3.4.0 for OSX platform.
 
