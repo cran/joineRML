@@ -6,8 +6,8 @@
 #'   hazards regression model with time-varying covariates. The multiple
 #'   longitudinal outcomes are modelled using a multivariate version of the
 #'   Laird and Ware linear mixed model. The association is captured by a
-#'   multivariate latent Gaussian process. The model is estimated using a Monte
-#'   Carlo Expectation Maximization (MCEM) algorithm.
+#'   multivariate latent Gaussian process. The model is estimated using a
+#'   (quasi-) Monte Carlo Expectation Maximization (MCEM) algorithm.
 #'
 #' @param formLongFixed a list of formulae for the fixed effects component of
 #'   each longitudinal outcome. The left hand-hand side defines the response,
@@ -26,7 +26,8 @@
 #'   multiple longitudinal outcomes with different measurement protocols. If the
 #'   multiple longitudinal outcomes are measured at the same time points for
 #'   each patient, then a \code{data.frame} object can be given instead of a
-#'   \code{list}. It is assumed that each data frame is in long format.
+#'   \code{list}. It is assumed that each data frame is in long format. \code{tibble}
+#'   objects are automatically converted to plain \code{data.frame} objects.
 #' @param survData a \code{data.frame} in which to interpret the variables named
 #'   in the \code{formSurv}. This is optional, and if not given, the required
 #'   data is searched for in \code{data}. Default is \code{survData=NULL}.
@@ -54,20 +55,23 @@
 #'
 #'   \item{\code{nMC}}{integer: the initial number of Monte Carlo samples to be
 #'   used for integration in the burn-in phase of the MCEM. Default is
-#'   \code{nMC=}max(100, 50\emph{K}).}
+#'   \code{nMC=}100\emph{K}).}
 #'
 #'   \item{\code{nMCscale}}{integer: the scale factor for the increase in Monte
 #'   Carlo size when Monte Carlo has not reduced from the previous iteration.
-#'   Default is \code{nMCscale=3}.}
+#'   Default is \code{nMCscale=5}.}
 #'
 #'   \item{\code{nMCmax}}{integer: the maximum number of Monte Carlo samples
 #'   that the algorithm is allowed to reach. Default is \code{nMCmax=20000}.}
 #'
-#'   \item{\code{burnin}}{integer: the number of iterations for burn-in phase of
-#'   the optimization algorithm. It is computationally inefficient to use a
+#'   \item{\code{burnin}}{integer: the number of iterations for 'burn-in' phase
+#'   of the optimization algorithm. It is computationally inefficient to use a
 #'   large number of Monte Carlo samples early on until one is approximately
-#'   near the maximum likelihood estimate. Default is
-#'   \code{burnin=}100\emph{K}.}
+#'   near the maximum likelihood estimate. Default is \code{burnin=}100\emph{K}
+#'   for \code{type='antithetic'} or \code{type='montecarlo'} and
+#'   \code{burnin=}5 for \code{type='sobol'} or \code{type='halton'}. For
+#'   standard methods, such a large burn-in will generally be unnecessary and
+#'   can be reduced on an application-specific basis.}
 #'
 #'   \item{\code{mcmaxIter}}{integer: the maximum number of MCEM algorithm
 #'   iterations allowed. Default is \code{mcmaxIter=burnin+200}.}
@@ -85,13 +89,15 @@
 #'   chance of over-shooting the maximizer.}
 #'
 #'   \item{\code{tol0}}{numeric: tolerance value for convergence in the
-#'   parameters; see \strong{Details}. Default is \code{5e-03}.}
+#'   parameters; see \strong{Details}. Default is \code{tol0=1e-03}.}
 #'
 #'   \item{\code{tol1}}{numeric: tolerance value for convergence in the
-#'   parameters; see \strong{Details}. Default is \code{1e-03}.}
+#'   parameters; see \strong{Details}. Default is \code{tol1=1e-03}.}
 #'
 #'   \item{\code{tol2}}{numeric: tolerance value for convergence in the
-#'   parameters; see \strong{Details}. Default is \code{5e-03}.}
+#'   parameters; see \strong{Details}. Default is \code{tol2=5e-03} for
+#'   \code{type='antithetic'} or \code{type='montecarlo'} and \code{tol2=1e-03}
+#'   for \code{type='sobol'} or \code{type='halton'}.}
 #'
 #'   \item{\code{tol.em}}{numeric: tolerance value for convergence in the
 #'   multivariate linear mixed model (MV-LMM). When \eqn{K > 1}, the optimal
@@ -105,6 +111,22 @@
 #'   \eqn{\ge}\code{rav}) criterion; see \strong{Details}. Default is
 #'   \code{0.1}, which is an order of magnitude higher than the SAS
 #'   implementation.}
+#'
+#'   \item{\code{type}}{character: type of Monte Carlo integration method to
+#'   use. Options are \describe{
+#'
+#'   \item{\code{type='montecarlo'}}{Vanilla Monte Carlo sampling.}
+#'
+#'   \item{\code{type='antithetic'}}{Variance reduction method using antithetic
+#'   simulation. This is the default option.}
+#'
+#'   \item{\code{type='sobol'}}{Quasi-Monte Carlo with a low
+#'   deterministic Sobol sequence with Owen-type scrambling.}
+#'
+#'   \item{\code{type='halton'}}{Quasi-Monte Carlo with a low deterministic
+#'   Halton sequence.}
+#'
+#'   }}
 #'
 #'   }
 #' @param ... options passed to the \code{control} argument.
@@ -137,9 +159,10 @@
 #'   association parameters of length \emph{K} for estimation.
 #'
 #'   The optimization routine is based on a Monte Carlo Expectation Maximization
-#'   algorithm (MCEM) algorithm, as described by Wei and Tanner (1990). As
-#'   proposed by Henderson et al. (2000), we use antithetic simulation for
-#'   variance reduction in the Monte Carlo integration.
+#'   algorithm (MCEM) algorithm, as described by Wei and Tanner (1990). With
+#'   options for using antithetic simulation for variance reduction in the Monte
+#'   Carlo integration, or quasi-Monte Carlo based on low order deterministic
+#'   sequences.
 #'
 #' @section Convergence criteria:
 #'
@@ -170,9 +193,9 @@
 #'   Due to the Monte Caro error, the algorithm could spuriously declare
 #'   convergence. Therefore, we require convergence to be satisfied for 3
 #'   consecutive iterations. The algorithm starts with a low number of Monte
-#'   Carlo samples in the burn-in phase, as it would be computationally
+#'   Carlo samples in the 'burn-in' phase, as it would be computationally
 #'   inefficient to use a large sample whilst far away from the true maximizer.
-#'   After the algorithm moves out of the adaptive phase, it uses an automated
+#'   After the algorithm moves out of this adaptive phase, it uses an automated
 #'   criterion based on the coefficient of variation of the relative parameter
 #'   change of the last 3 iterations to decide whether to increase the Monte
 #'   Carlo sample size. See the technical vignette and Ripatti et al. (2002) for
@@ -315,7 +338,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   Call <- match.call()
   balanced <- FALSE # assume unless proven o/w
 
-  # formulas do not need to be given as lists if K=1
+  # Formulas do not need to be given as lists if K=1
   if (!is.list(formLongFixed)) {
     balanced <- TRUE
     formLongFixed <- list(formLongFixed)
@@ -325,9 +348,9 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     K <- length(formLongFixed)
   }
 
-  # data does not need to a list if K=1
+  # Data does not need to a list if K=1
   # if K>1 and not a list, assume data balanced
-  if (class(data) != "list") {
+  if (!("list" %in% class(data))) {
     balanced <- TRUE
     data <- list(data)
     if (K > 1) {
@@ -342,10 +365,19 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     stop(paste("The number of datasets expected is K =", K))
   }
 
+  # Strip `tibble` class from data (breaks indexing by column) if present
+  data <- lapply(data, function(d) {
+    if (any(c("tbl_df", "tbl") %in% class(d))) {
+      return(as.data.frame(d))
+    } else {
+      return(d)
+    }
+  })
+
   id <- as.character(nlme::splitFormula(formLongRandom[[1]], "|")[[2]])[2]
   n <- length(unique(data[[1]][, id]))
 
-  # incase timeVar not a vector when K>1
+  # Incase timeVar not a vector when K>1
   if (length(timeVar) == 1 & (K > 1)) {
     timeVar <- rep(timeVar, K)
   }
@@ -353,14 +385,14 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     stop(paste("The length of timeVar must equal", K))
   }
 
-  # order the data + id -> factor
+  # Order the data + id -> factor
   for (k in 1:K) {
     data[[k]] <- data[[k]][order(xtfrm(data[[k]][, id]), data[[k]][, timeVar[k]]), ]
     data[[k]][, id] <- as.factor(data[[k]][, id])
     data[[k]] <- droplevels(data[[k]])
   }
 
-  # check the same patients measured at least once for each marker
+  # Check the same patients measured at least once for each marker
   if (K > 1) {
     uniq.ids <- list(sort(unique(data[[1]][, id])))
     for (k in 2:K) {
@@ -375,17 +407,36 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
   # Control parameters
   #*****************************************************
 
-  con <- list(nMC = max(100, 50*K), nMCscale = 3, nMCmax = 20000, burnin = 100*K,
+  con <- list(nMC = 100*K, nMCscale = 5, nMCmax = 20000, burnin = 100*K,
               mcmaxIter = 100*K + 200, convCrit = "sas", gammaOpt = "NR",
-              tol0 = 5e-03, tol1 = 1e-03, tol2 = 5e-03, tol.em = 1e-04, rav = 0.1)
+              tol0 = 1e-03, tol1 = 1e-03, tol2 = 5e-03, tol.em = 1e-04,
+              rav = 0.1, type = "antithetic")
   nc <- names(con)
   control <- c(control, list(...))
   con[(conArgs <- names(control))] <- control
+
+  # Checks and over-rides
+
+  # Default for tol.em
+  if (("tol.em" %in% names(control)) || ("tol2" %in% names(control))) {
+    con$tol.em <- min(con$tol.em, con$tol2)
+  }
+  # Don't allow algorithm to terminate before end of burnin
   if (("burnin" %in% names(control)) && !("mcmaxIter" %in% names(control))) {
     con$mcmaxIter <- con$burnin + 200
   }
-  con$tol.em <- min(con$tol.em, con$tol2)
-
+  # Separate defaults for QMC methods
+  if (con$type %in% c("sobol", "halton")) {
+    # reduce burn-in
+    if (!("burnin" %in% names(control))) {
+      con$burnin <- 5
+    }
+    # reduce tol2
+    if (!("tol2" %in% names(control))) {
+      con$tol2 <- 1e-03
+    }
+  }
+  # If any unmatched arguments given
   if (length(unmatched <- conArgs[!(conArgs %in% nc)]) > 0) {
     warning("Unknown arguments passed to 'control': ", paste(unmatched, collapse = ", "))
   }
@@ -664,7 +715,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
 
     stepUpdate <- stepEM(theta = theta, l = l, t = t, z = z,
                          nMC = nMC, verbose = verbose, gammaOpt = con$gammaOpt,
-                         pfs = FALSE)
+                         pfs = FALSE, type = con$type)
     theta.new <- stepUpdate$theta.new
     log.lik.new <- stepUpdate$ll
     ll.hx[it] <- log.lik.new
@@ -683,29 +734,32 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
     Delta.vec[it] <- conv.status$max.reldelta.pars
     log.lik <- log.lik.new
 
-    if (it >= con$burnin) {
+    if (it >= con$burnin + 3) {
       # require convergence condition to be satisfied 3 iterations
       # in a row + cannot converge during burn-in stage
-      conv <- all(conv.track[(it-2):it])
+      conv <- all(conv.track[(it - 2):it])
     } else {
       conv <- FALSE
     }
 
-    # Ripatti decision-rule for nMC increase using CV statistics
-    if (it >= con$burnin && !conv) {
-      cv <- sd(Delta.vec[(it-2):it]) / mean(Delta.vec[(it-2):it])
+    if (!conv && (it >= con$burnin)) {
+      # Ripatti decision-rule for nMC increase using CV statistics
+      cv <- ifelse(it >= 3, sd(Delta.vec[(it - 2):it]) / mean(Delta.vec[(it - 2):it]), 0)
       if (verbose) {
         cat(paste("CV statistic (old) =", round(cv.old, 6), "\n"))
         cat(paste("CV statistic (new) =", round(cv, 6), "\n\n"))
       }
-      if (cv > cv.old) {
+      ripatti <- (cv > cv.old)
+      cv.old <- cv
+      # Check for drift in log-likelihood with using QMC
+      lldrift <- (con$type %in% c("sobol", "halton")) && (conv.status$rel.ll < 0)
+      if (ripatti || lldrift) {
         nMC.old <- nMC
         nMC <- min(nMC + floor(nMC / con$nMCscale), con$nMCmax)
-        if (verbose && (nMC > nMC.old)) {
-          cat(paste("Changing M to", nMC, "\n\n"))
-        }
       }
-      cv.old <- cv
+      if (verbose) {
+        cat(paste("Using number of MC nodes:", nMC, "\n\n"))
+      }
     }
 
     # Once converged: calculate SEs and posterior REs (means + variances)
@@ -716,7 +770,7 @@ mjoint <- function(formLongFixed, formLongRandom, formSurv, data, survData = NUL
         message("Calculating post model fit statistics...\n")
         postFitCalcs <- stepEM(theta = theta, l = l, t = t, z = z,
                                nMC = nMC, verbose = FALSE, gammaOpt = "NR",
-                               pfs = TRUE)
+                               pfs = TRUE, type = con$type)
       }
       break
     } else {

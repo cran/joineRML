@@ -1,3 +1,27 @@
+# joineRML 0.4.0
+
+## New features
+
+* The MCEM algorithm can be implemented with vanilla Monte Carlo and quasi-Monte Carlo (using either the scrambled Sobol sequence or the Halton sequence). This is implemented through the `type` argument passed to the list of `control` parameters in `mjoint()`.
+
+* `bootSE()` now has option to use parallel computing via the `foreach` package.
+
+## Bug patches
+
+* Fixed some small errors in the `epileptic.qol` dataset.
+
+* Fixed situation where a tibble might be given as the dataset (#55 @ellessenne).
+
+* Catches errors in bootstrap due to "bad" data and automatically restarts the bootstrap (#57 @ellessenne) 
+
+## Housekeeping
+
+* Added hex sticker badge.
+
+* Moved the make files and raw data for `qol` and `renal` datasets into the `~/data-raw/` directory.
+
+* Added @ellessenne as package contributor for testing and bug corrections (PRs #55 and #57).
+
 # joineRML 0.3.0
 
 ## New features

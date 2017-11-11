@@ -17,6 +17,17 @@
 #' @param progress logical: should a progress bar be shown on the console to
 #'   indicate the percentage of bootstrap iterations completed? Default is
 #'   \code{progress=TRUE}.
+#' @param ncores integer: if more than one core is available, then the \code{bootSE}
+#'   function can run in parallel via the \code{\link[foreach]{foreach}}
+#'   function. By default, \code{ncores=1}, which defaults to serial mode. Note
+#'   that if \code{ncores}>1, then \code{progress} is set to \code{FALSE} by
+#'   default, as it is not possible to display progress bars for parallel
+#'   processes at the current time.
+#' @param safe.boot logical: should each bootstrap replication be wrapped in a
+#'   \code{\link[base]{tryCatch}} statement to catch errors (e.g. during the
+#'   optimisation progress)? When model fitting throws errors, a new bootstrap
+#'   sample is drawn for the current iteration and the model is re-fit; this
+#'   process continuex until a model fits succesfully. Default is \code{FALSE}.
 #' @inheritParams mjoint
 #'
 #' @details Standard errors and confidence intervals are obtained by repeated
@@ -25,7 +36,12 @@
 #'   sampling subjects, not individual records.
 #'
 #' @note This function is computationally intensive. A dynamic progress bar is
-#'   displayed showing the percentage of bootstrap models fitted.
+#'   displayed showing the percentage of bootstrap models fitted. On computer
+#'   systems with more than one core available, computational time can be
+#'   reduced by passing the argument \code{ncores} (with integer value >1) to
+#'   \code{bootSE}, which implements parallel processing via the
+#'   \code{\link[foreach]{foreach}} package. \strong{Note:} if parallel
+#'   processing is implemented, then the progress bar is not displayed.
 #'
 #'   Due to random sampling, an \code{mjoint} model fitted to some bootstrap
 #'   samples may not converge within the specified control parameter settings.
@@ -44,6 +60,9 @@
 #' Raton, FL: Chapman & Hall/CRC.
 #'
 #' @return An object of class \code{bootSE}.
+#' @import foreach
+#' @importFrom parallel detectCores
+#' @importFrom doParallel registerDoParallel
 #' @export
 #'
 #' @examples
@@ -70,7 +89,7 @@
 #' }
 bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
                    verbose = FALSE, control = list(), progress = TRUE,
-                   ...) {
+                   ncores = 1, safe.boot = FALSE, ...) {
 
   if (!inherits(object, "mjoint")) {
     stop("Use only with 'mjoint' model objects.\n")
@@ -103,38 +122,92 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
     theta.hat <- NULL
   }
 
-  out <- list()
-  conv.status <- vector(length = nboot)
-  if (progress) {
-    cat("\n\n")
-    pb <- utils::txtProgressBar(min = 0, max = nboot, style = 3)
-  }
-  for (b in 1:nboot) {
-    # bootstrap sample data
-    data.boot <- sampleData(object = object)
-    # fit joint model
-    suppressMessages(
-      fit.boot <- mjoint(formLongFixed = formLongFixed,
-                         formLongRandom = formLongRandom,
-                         formSurv = formSurv,
-                         data = data.boot$longData.boot,
-                         survData = data.boot$survData.boot,
-                         timeVar = timeVar,
-                         inits = theta.hat,
-                         verbose = verbose,
-                         pfs = FALSE,
-                         control = con,
-                         ...)
-    )
-    out[[b]] <- fit.boot$coefficients
-    conv.status[b] <- fit.boot$conv
-    if (progress) {
-      utils::setTxtProgressBar(pb, b)
+  # Internal function for bootstrap
+  if (safe.boot) {
+    bootfun <- function() {
+      fit.boot <- NULL
+      # keep iterating if the model fails with errors
+      while (is.null(fit.boot)) {
+        # bootstrap sample data
+        data.boot <- sampleData(object = object)
+        # fit joint model
+        fit.boot <- tryCatch(suppressMessages(
+          mjoint(formLongFixed = formLongFixed,
+                 formLongRandom = formLongRandom,
+                 formSurv = formSurv,
+                 data = data.boot$longData.boot,
+                 survData = data.boot$survData.boot,
+                 timeVar = timeVar,
+                 inits = theta.hat,
+                 verbose = verbose,
+                 pfs = FALSE,
+                 control = con,
+                 ...)),
+          error = function(e) NULL)
+      }
+      return(fit.boot)
+    }} else {
+      bootfun <- function() {
+        # bootstrap sample data
+        data.boot <- sampleData(object = object)
+        # fit joint model
+        fit.boot <- suppressMessages(
+          mjoint(formLongFixed = formLongFixed,
+                 formLongRandom = formLongRandom,
+                 formSurv = formSurv,
+                 data = data.boot$longData.boot,
+                 survData = data.boot$survData.boot,
+                 timeVar = timeVar,
+                 inits = theta.hat,
+                 verbose = verbose,
+                 pfs = FALSE,
+                 control = con,
+                 ...)
+        )
+        return(fit.boot)
+      }
     }
+
+  if (ncores > 1) {
+    ncores.max <- parallel::detectCores()
+    if (ncores > ncores.max) {
+      ncores <- ncores.max
+      warning(paste(
+        "ncores is > the maximum number of cores on this machine. Switching to ncores =",
+        ncores.max))
+    }
+    # *** Parallel version ***
+    doParallel::registerDoParallel(cores = ncores)
+    out <- foreach(b = 1:nboot, .packages = 'joineRML') %dopar% {
+      fit.boot <- bootfun()
+      return(list("coefs" = fit.boot$coefficient,
+                  "conv" = fit.boot$conv))
+    }
+    registerDoSEQ()
+
+  } else {
+    # *** Serial version (incl. progress bar) ***
+    out <- list()
+    conv.status <- vector(length = nboot)
+    if (progress) {
+      cat("\n\n") # start progress bar
+      pb <- utils::txtProgressBar(min = 0, max = nboot, style = 3)
+    }
+    for (b in 1:nboot) {
+      fit.boot <- bootfun()
+      out[[b]] <- list("coefs" = fit.boot$coefficient,
+                       "conv" = fit.boot$conv)
+      if (progress) {
+        utils::setTxtProgressBar(pb, b) # update progress bar
+      }
+    }
+    if (progress) {
+      close(pb) # close progress bar
+    }
+
   }
-  if (progress) {
-    close(pb)
-  }
+
+  conv.status <- sapply(out, function(x) x$conv)
 
   # Checks
   if (mean(conv.status) <= 0.1) {
@@ -143,9 +216,9 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
   out <- out[conv.status]
 
   # Bootstrap estimates
-  beta.mat   <- sapply(out, function(u) u$beta)
-  gamma.mat  <- sapply(out, function(u) u$gamma)
-  sigma2.mat <- sapply(out, function(u) u$sigma2)
+  beta.mat   <- sapply(out, function(u) u$coefs$beta)
+  gamma.mat  <- sapply(out, function(u) u$coefs$gamma)
+  sigma2.mat <- sapply(out, function(u) u$coefs$sigma2)
 
   # If K = 1, sigma2 might be a vector, so need to coerce to matrix
   vec2mat <- function(x) {

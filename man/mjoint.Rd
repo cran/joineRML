@@ -29,7 +29,8 @@ in which to interpret the variables named in the \code{formLongFixed} and
 multiple longitudinal outcomes with different measurement protocols. If the
 multiple longitudinal outcomes are measured at the same time points for
 each patient, then a \code{data.frame} object can be given instead of a
-\code{list}. It is assumed that each data frame is in long format.}
+\code{list}. It is assumed that each data frame is in long format. \code{tibble}
+objects are automatically converted to plain \code{data.frame} objects.}
 
 \item{survData}{a \code{data.frame} in which to interpret the variables named
 in the \code{formSurv}. This is optional, and if not given, the required
@@ -63,20 +64,23 @@ required.}
 
   \item{\code{nMC}}{integer: the initial number of Monte Carlo samples to be
   used for integration in the burn-in phase of the MCEM. Default is
-  \code{nMC=}max(100, 50\emph{K}).}
+  \code{nMC=}100\emph{K}).}
 
   \item{\code{nMCscale}}{integer: the scale factor for the increase in Monte
   Carlo size when Monte Carlo has not reduced from the previous iteration.
-  Default is \code{nMCscale=3}.}
+  Default is \code{nMCscale=5}.}
 
   \item{\code{nMCmax}}{integer: the maximum number of Monte Carlo samples
   that the algorithm is allowed to reach. Default is \code{nMCmax=20000}.}
 
-  \item{\code{burnin}}{integer: the number of iterations for burn-in phase of
-  the optimization algorithm. It is computationally inefficient to use a
+  \item{\code{burnin}}{integer: the number of iterations for 'burn-in' phase
+  of the optimization algorithm. It is computationally inefficient to use a
   large number of Monte Carlo samples early on until one is approximately
-  near the maximum likelihood estimate. Default is
-  \code{burnin=}100\emph{K}.}
+  near the maximum likelihood estimate. Default is \code{burnin=}100\emph{K}
+  for \code{type='antithetic'} or \code{type='montecarlo'} and
+  \code{burnin=}5 for \code{type='sobol'} or \code{type='halton'}. For
+  standard methods, such a large burn-in will generally be unnecessary and
+  can be reduced on an application-specific basis.}
 
   \item{\code{mcmaxIter}}{integer: the maximum number of MCEM algorithm
   iterations allowed. Default is \code{mcmaxIter=burnin+200}.}
@@ -94,13 +98,15 @@ required.}
   chance of over-shooting the maximizer.}
 
   \item{\code{tol0}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{5e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol0=1e-03}.}
 
   \item{\code{tol1}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{1e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol1=1e-03}.}
 
   \item{\code{tol2}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{5e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol2=5e-03} for
+  \code{type='antithetic'} or \code{type='montecarlo'} and \code{tol2=1e-03}
+  for \code{type='sobol'} or \code{type='halton'}.}
 
   \item{\code{tol.em}}{numeric: tolerance value for convergence in the
   multivariate linear mixed model (MV-LMM). When \eqn{K > 1}, the optimal
@@ -114,6 +120,22 @@ required.}
   \eqn{\ge}\code{rav}) criterion; see \strong{Details}. Default is
   \code{0.1}, which is an order of magnitude higher than the SAS
   implementation.}
+
+  \item{\code{type}}{character: type of Monte Carlo integration method to
+  use. Options are \describe{
+
+  \item{\code{type='montecarlo'}}{Vanilla Monte Carlo sampling.}
+
+  \item{\code{type='antithetic'}}{Variance reduction method using antithetic
+  simulation. This is the default option.}
+
+  \item{\code{type='sobol'}}{Quasi-Monte Carlo with a low
+  deterministic Sobol sequence with Owen-type scrambling.}
+
+  \item{\code{type='halton'}}{Quasi-Monte Carlo with a low deterministic
+  Halton sequence.}
+
+  }}
 
   }}
 
@@ -130,8 +152,8 @@ This function fits the joint model proposed by Henderson et al.
   hazards regression model with time-varying covariates. The multiple
   longitudinal outcomes are modelled using a multivariate version of the
   Laird and Ware linear mixed model. The association is captured by a
-  multivariate latent Gaussian process. The model is estimated using a Monte
-  Carlo Expectation Maximization (MCEM) algorithm.
+  multivariate latent Gaussian process. The model is estimated using a
+  (quasi-) Monte Carlo Expectation Maximization (MCEM) algorithm.
 }
 \details{
 Function \code{mjoint} fits joint models for time-to-event and
@@ -162,9 +184,10 @@ Function \code{mjoint} fits joint models for time-to-event and
   association parameters of length \emph{K} for estimation.
 
   The optimization routine is based on a Monte Carlo Expectation Maximization
-  algorithm (MCEM) algorithm, as described by Wei and Tanner (1990). As
-  proposed by Henderson et al. (2000), we use antithetic simulation for
-  variance reduction in the Monte Carlo integration.
+  algorithm (MCEM) algorithm, as described by Wei and Tanner (1990). With
+  options for using antithetic simulation for variance reduction in the Monte
+  Carlo integration, or quasi-Monte Carlo based on low order deterministic
+  sequences.
 }
 \section{Convergence criteria}{
 
@@ -196,9 +219,9 @@ Function \code{mjoint} fits joint models for time-to-event and
   Due to the Monte Caro error, the algorithm could spuriously declare
   convergence. Therefore, we require convergence to be satisfied for 3
   consecutive iterations. The algorithm starts with a low number of Monte
-  Carlo samples in the burn-in phase, as it would be computationally
+  Carlo samples in the 'burn-in' phase, as it would be computationally
   inefficient to use a large sample whilst far away from the true maximizer.
-  After the algorithm moves out of the adaptive phase, it uses an automated
+  After the algorithm moves out of this adaptive phase, it uses an automated
   criterion based on the coefficient of variation of the relative parameter
   change of the last 3 iterations to decide whether to increase the Monte
   Carlo sample size. See the technical vignette and Ripatti et al. (2002) for

@@ -5,7 +5,7 @@
 \title{Standard errors via bootstrap for an \code{mjoint} object}
 \usage{
 bootSE(object, nboot = 100, ci = 0.95, use.mle = TRUE, verbose = FALSE,
-  control = list(), progress = TRUE, ...)
+  control = list(), progress = TRUE, ncores = 1, safe.boot = FALSE, ...)
 }
 \arguments{
 \item{object}{an object inheriting from class \code{mjoint} for a joint model
@@ -29,20 +29,23 @@ algorithm. Default is \code{FALSE}.}
 
   \item{\code{nMC}}{integer: the initial number of Monte Carlo samples to be
   used for integration in the burn-in phase of the MCEM. Default is
-  \code{nMC=}max(100, 50\emph{K}).}
+  \code{nMC=}100\emph{K}).}
 
   \item{\code{nMCscale}}{integer: the scale factor for the increase in Monte
   Carlo size when Monte Carlo has not reduced from the previous iteration.
-  Default is \code{nMCscale=3}.}
+  Default is \code{nMCscale=5}.}
 
   \item{\code{nMCmax}}{integer: the maximum number of Monte Carlo samples
   that the algorithm is allowed to reach. Default is \code{nMCmax=20000}.}
 
-  \item{\code{burnin}}{integer: the number of iterations for burn-in phase of
-  the optimization algorithm. It is computationally inefficient to use a
+  \item{\code{burnin}}{integer: the number of iterations for 'burn-in' phase
+  of the optimization algorithm. It is computationally inefficient to use a
   large number of Monte Carlo samples early on until one is approximately
-  near the maximum likelihood estimate. Default is
-  \code{burnin=}100\emph{K}.}
+  near the maximum likelihood estimate. Default is \code{burnin=}100\emph{K}
+  for \code{type='antithetic'} or \code{type='montecarlo'} and
+  \code{burnin=}5 for \code{type='sobol'} or \code{type='halton'}. For
+  standard methods, such a large burn-in will generally be unnecessary and
+  can be reduced on an application-specific basis.}
 
   \item{\code{mcmaxIter}}{integer: the maximum number of MCEM algorithm
   iterations allowed. Default is \code{mcmaxIter=burnin+200}.}
@@ -60,13 +63,15 @@ algorithm. Default is \code{FALSE}.}
   chance of over-shooting the maximizer.}
 
   \item{\code{tol0}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{5e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol0=1e-03}.}
 
   \item{\code{tol1}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{1e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol1=1e-03}.}
 
   \item{\code{tol2}}{numeric: tolerance value for convergence in the
-  parameters; see \strong{Details}. Default is \code{5e-03}.}
+  parameters; see \strong{Details}. Default is \code{tol2=5e-03} for
+  \code{type='antithetic'} or \code{type='montecarlo'} and \code{tol2=1e-03}
+  for \code{type='sobol'} or \code{type='halton'}.}
 
   \item{\code{tol.em}}{numeric: tolerance value for convergence in the
   multivariate linear mixed model (MV-LMM). When \eqn{K > 1}, the optimal
@@ -81,11 +86,40 @@ algorithm. Default is \code{FALSE}.}
   \code{0.1}, which is an order of magnitude higher than the SAS
   implementation.}
 
+  \item{\code{type}}{character: type of Monte Carlo integration method to
+  use. Options are \describe{
+
+  \item{\code{type='montecarlo'}}{Vanilla Monte Carlo sampling.}
+
+  \item{\code{type='antithetic'}}{Variance reduction method using antithetic
+  simulation. This is the default option.}
+
+  \item{\code{type='sobol'}}{Quasi-Monte Carlo with a low
+  deterministic Sobol sequence with Owen-type scrambling.}
+
+  \item{\code{type='halton'}}{Quasi-Monte Carlo with a low deterministic
+  Halton sequence.}
+
+  }}
+
   }}
 
 \item{progress}{logical: should a progress bar be shown on the console to
 indicate the percentage of bootstrap iterations completed? Default is
 \code{progress=TRUE}.}
+
+\item{ncores}{integer: if more than one core is available, then the \code{bootSE}
+function can run in parallel via the \code{\link[foreach]{foreach}}
+function. By default, \code{ncores=1}, which defaults to serial mode. Note
+that if \code{ncores}>1, then \code{progress} is set to \code{FALSE} by
+default, as it is not possible to display progress bars for parallel
+processes at the current time.}
+
+\item{safe.boot}{logical: should each bootstrap replication be wrapped in a
+\code{\link[base]{tryCatch}} statement to catch errors (e.g. during the
+optimisation progress)? When model fitting throws errors, a new bootstrap
+sample is drawn for the current iteration and the model is re-fit; this
+process continuex until a model fits succesfully. Default is \code{FALSE}.}
 
 \item{...}{options passed to the \code{control} argument.}
 }
@@ -106,7 +140,12 @@ Standard errors and confidence intervals are obtained by repeated
 }
 \note{
 This function is computationally intensive. A dynamic progress bar is
-  displayed showing the percentage of bootstrap models fitted.
+  displayed showing the percentage of bootstrap models fitted. On computer
+  systems with more than one core available, computational time can be
+  reduced by passing the argument \code{ncores} (with integer value >1) to
+  \code{bootSE}, which implements parallel processing via the
+  \code{\link[foreach]{foreach}} package. \strong{Note:} if parallel
+  processing is implemented, then the progress bar is not displayed.
 
   Due to random sampling, an \code{mjoint} model fitted to some bootstrap
   samples may not converge within the specified control parameter settings.
