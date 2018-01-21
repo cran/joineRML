@@ -29,7 +29,7 @@ algorithm. Default is \code{FALSE}.}
 
   \item{\code{nMC}}{integer: the initial number of Monte Carlo samples to be
   used for integration in the burn-in phase of the MCEM. Default is
-  \code{nMC=}100\emph{K}).}
+  \code{nMC=}100\emph{K}.}
 
   \item{\code{nMCscale}}{integer: the scale factor for the increase in Monte
   Carlo size when Monte Carlo has not reduced from the previous iteration.
@@ -119,7 +119,7 @@ processes at the current time.}
 \code{\link[base]{tryCatch}} statement to catch errors (e.g. during the
 optimisation progress)? When model fitting throws errors, a new bootstrap
 sample is drawn for the current iteration and the model is re-fit; this
-process continuex until a model fits succesfully. Default is \code{FALSE}.}
+process continuex until a model fits successfully. Default is \code{FALSE}.}
 
 \item{...}{options passed to the \code{control} argument.}
 }

@@ -5,7 +5,7 @@
 \title{Plot a \code{dynSurv} object}
 \usage{
 \method{plot}{dynSurv}(x, main = NULL, xlab = NULL, ylab1 = NULL,
-  ylab2 = NULL, grid = TRUE, estimator, ...)
+  ylab2 = NULL, grid = TRUE, estimator, smooth = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{dynSurv} calculated by the
@@ -31,6 +31,9 @@ objecting inheritting of class \code{dynSurv}. Default is
 \code{dynSurv} objects, i.e. those of \code{type='first-order'}, as in that
 case a mode-based prediction is plotted.}
 
+\item{smooth}{logical: whether to overlay a smooth survival curve (see
+\strong{Details}). Defaults to \code{FALSE}.}
+
 \item{...}{additional plotting arguments; currently limited to \code{lwd} and
 \code{cex}. See \code{\link[graphics]{par}} for details.}
 }
@@ -40,6 +43,15 @@ A dynamic prediction plot.
 \description{
 Plots the conditional time-to-event distribution for a
   \emph{new} subject calculated using the \code{\link{dynSurv}} function.
+}
+\details{
+The \code{joineRML} package is based on a semi-parametric model,
+  such that the baseline hazards function is left unspecified. For
+  prediction, it might be preferable to have a smooth survival curve. Rather
+  than changing modelling framework \emph{a prior}, a constrained B-splines
+  non-parametric median quantile curve is estimated using
+  \code{\link[cobs]{cobs}}, with a penalty function of \eqn{\lambda=1}, and
+  subject to constraints of monotonicity and \eqn{S(t)=1}.
 }
 \examples{
 \dontrun{
@@ -72,6 +84,10 @@ plot(out2, main = "Patient 1")
 }
 }
 \references{
+Ng P, Maechler M. A fast and efficient implementation of qualitatively
+constrained quantile smoothing splines. \emph{Statistical Modelling}. 2007;
+\strong{7(4)}: 315-328.
+
 Rizopoulos D. Dynamic predictions and prospective accuracy in joint models
 for longitudinal and time-to-event data. \emph{Biometrics}. 2011;
 \strong{67}: 819–829.

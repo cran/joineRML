@@ -2,7 +2,7 @@ Package: joineRML
 Type: Package
 Title: Joint Modelling of Multivariate Longitudinal Data and
         Time-to-Event Outcomes
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(
     person("Graeme L.", "Hickey", email = "graeme.hickey@liverpool.ac.uk", 
         role = c("cre", "aut")),
@@ -18,7 +18,9 @@ Authors@R: c(
         role = c("ctb", "dtc"),
         comment = "data/renal.rda, R/hessian.R, R/vcov.R"),
     person("Alessandro", "Gasparini", email = "ag475@le.ac.uk",
-        role = "ctb")
+        role = "ctb"),
+    person("Medical Research Council", role = "fnd",
+        comment = "Grant number: MR/M013227/1")
     )
 Encoding: UTF-8
 Description: Fits the joint model proposed by Henderson and colleagues (2000) 
@@ -35,22 +37,23 @@ URL: https://github.com/graemeleehickey/joineRML/
 BugReports: https://github.com/graemeleehickey/joineRML/issues
 LazyData: true
 Depends: R (>= 3.3.0), nlme, survival
-Imports: doParallel, foreach, ggplot2, graphics, lme4 (>= 1.1-8), MASS,
-        Matrix, mvtnorm, parallel, randtoolbox, Rcpp (>= 0.12.7),
+Imports: cobs, doParallel, foreach, ggplot2, graphics, lme4 (>= 1.1-8),
+        MASS, Matrix, mvtnorm, parallel, randtoolbox, Rcpp (>= 0.12.7),
         stats, utils
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1
 Suggests: JM, joineR, knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2017-11-11 20:50:34 UTC; graemeleehickey
+Packaged: 2018-01-21 19:56:01 UTC; graemeleehickey
 Author: Graeme L. Hickey [cre, aut],
   Pete Philipson [aut],
   Andrea Jorgensen [aut],
   Ruwanthi Kolamunnage-Dona [aut],
   Paula Williamson [ctb],
   Dimitris Rizopoulos [ctb, dtc] (data/renal.rda, R/hessian.R, R/vcov.R),
-  Alessandro Gasparini [ctb]
+  Alessandro Gasparini [ctb],
+  Medical Research Council [fnd] (Grant number: MR/M013227/1)
 Maintainer: Graeme L. Hickey <graeme.hickey@liverpool.ac.uk>
 Repository: CRAN
-Date/Publication: 2017-11-12 00:33:32 UTC
+Date/Publication: 2018-01-21 20:11:03 UTC
