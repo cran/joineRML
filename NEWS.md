@@ -1,3 +1,19 @@
+# joineRML 0.4.2
+
+## Bug patches
+
+* Fixed issue with citation date due to DATE not being present in the DESCRIPTION file.
+
+## Housekeeping
+
+* Added Zenodo DOI badge to README.
+
+* Added ORCID IDs for authors.
+
+* Remove unused objects once finished with them to try and reduce memory overheads.
+
+* Changed maintainer to Pete Philipson.
+
 # joineRML 0.4.1
 
 ## New features
@@ -15,6 +31,8 @@
 * Minor bug fixes to plotting functions.
 
 * Added MRC to DESCRIPTION as funder.
+
+* Added Depsy badge to README.
 
 # joineRML 0.4.0
 
