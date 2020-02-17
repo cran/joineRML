@@ -2,17 +2,17 @@ Package: joineRML
 Type: Package
 Title: Joint Modelling of Multivariate Longitudinal Data and
         Time-to-Event Outcomes
-Version: 0.4.2
-Date: 2018-04-26
+Version: 0.4.3
+Date: 2020-02-17
 Authors@R: c(
-    person("Graeme L.", "Hickey", email = "graeme.hickey@liverpool.ac.uk", 
-        role = "aut",
-        comment = c(ORCID = "0000-0002-4989-0054")),
-    person("Pete", "Philipson", email = "pete.philipson@northumbria.ac.uk", 
+    person("Graeme L.", "Hickey", email = "graemeleehickey@gmail.com", 
         role = c("cre", "aut"),
+        comment = c(ORCID = "0000-0002-4989-0054")),
+    person("Pete", "Philipson", email = "peter.philipson1@newcastle.ac.uk", 
+        role = "aut",
         comment = c(ORCID = "0000-0001-7846-0208")),
     person("Andrea", "Jorgensen", email = "aljorgen@liverpool.ac.uk", 
-        role = "aut",
+        role = "ctb",
         comment = c(ORCID = "0000-0002-6977-9337")),
     person("Ruwanthi", "Kolamunnage-Dona", email = "kdrr@liverpool.ac.uk", 
         role = "aut",
@@ -23,7 +23,7 @@ Authors@R: c(
     person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl",
         role = c("ctb", "dtc"),
         comment = "data/renal.rda, R/hessian.R, R/vcov.R"),
-    person("Alessandro", "Gasparini", email = "ag475@le.ac.uk",
+    person("Alessandro", "Gasparini", email = "alessandro.gasparini@ki.se",
         role = "ctb",
         comment = c(ORCID = "0000-0002-8319-7624")),
     person("Medical Research Council", role = "fnd",
@@ -43,25 +43,25 @@ License: GPL-3 | file LICENSE
 URL: https://github.com/petephilipson/joineRML
 BugReports: https://github.com/graemeleehickey/joineRML/issues
 LazyData: true
-Depends: R (>= 3.3.0), nlme, survival
+Depends: R (>= 3.6.0), nlme, survival
 Imports: cobs, doParallel, foreach, ggplot2, graphics, lme4 (>= 1.1-8),
         MASS, Matrix, mvtnorm, parallel, randtoolbox, Rcpp (>= 0.12.7),
         stats, utils
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2
 Suggests: JM, joineR, knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2018-05-28 20:42:48 UTC; Pete
-Author: Graeme L. Hickey [aut] (<https://orcid.org/0000-0002-4989-0054>),
-  Pete Philipson [cre, aut] (<https://orcid.org/0000-0001-7846-0208>),
-  Andrea Jorgensen [aut] (<https://orcid.org/0000-0002-6977-9337>),
+Packaged: 2020-02-17 11:04:02 UTC; hickeg3
+Author: Graeme L. Hickey [cre, aut] (<https://orcid.org/0000-0002-4989-0054>),
+  Pete Philipson [aut] (<https://orcid.org/0000-0001-7846-0208>),
+  Andrea Jorgensen [ctb] (<https://orcid.org/0000-0002-6977-9337>),
   Ruwanthi Kolamunnage-Dona [aut]
     (<https://orcid.org/0000-0003-3886-6208>),
   Paula Williamson [ctb] (<https://orcid.org/0000-0001-9802-6636>),
   Dimitris Rizopoulos [ctb, dtc] (data/renal.rda, R/hessian.R, R/vcov.R),
   Alessandro Gasparini [ctb] (<https://orcid.org/0000-0002-8319-7624>),
   Medical Research Council [fnd] (Grant number: MR/M013227/1)
-Maintainer: Pete Philipson <pete.philipson@northumbria.ac.uk>
+Maintainer: Graeme L. Hickey <graemeleehickey@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-05-28 23:00:22 UTC
+Date/Publication: 2020-02-17 11:50:02 UTC
