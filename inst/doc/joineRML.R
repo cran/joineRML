@@ -3,8 +3,13 @@
 library(Matrix)
 library(nlme)
 library(survival)
-library(joineR)
 library(joineRML)
+
+if (requireNamespace('joineR', quietly = TRUE)) {
+  library('joineR')
+} else {
+  message("'joineR' not available")
+}
 
 ## ----vignette, eval=FALSE-----------------------------------------------------
 #  vignette("technical", package = "joineRML")
@@ -58,7 +63,10 @@ plot(fit, params = "beta")
 ## ----hvd_model_boot_summary, eval=FALSE---------------------------------------
 #  summary(fit, bootSE = fit.se)
 
-## ----joineR, cache=TRUE-------------------------------------------------------
+## ----joineR_require, echo=FALSE, message=FALSE--------------------------------
+joineR_available <- require(joineR)
+
+## ----joineR, cache=TRUE, eval=joineR_available--------------------------------
 library(joineR, quietly = TRUE)
 
 hvd.surv <- UniqueVariables(hvd, var.col = c("fuyrs", "status"), id.col = "num")
@@ -88,7 +96,7 @@ fit.joinerml <- mjoint(formLongFixed = log.lvmi ~ time + age,
 
 summary(fit.joinerml)
 
-## ----re_comp_plot, fig.width=7.25, fig.height=4-------------------------------
+## ----re_comp_plot, fig.width=7.25, fig.height=4, eval=joineR_available--------
 id <- as.numeric(row.names(fit.joiner$coefficients$random))
 id.ord <- order(id) # joineR rearranges patient ordering during EM fit
 par(mfrow = c(1, 2))
