@@ -2,7 +2,7 @@ Package: joineRML
 Type: Package
 Title: Joint Modelling of Multivariate Longitudinal Data and
         Time-to-Event Outcomes
-Version: 0.4.6
+Version: 0.4.7
 Authors@R: c(
     person("Graeme L.", "Hickey", email = "graemeleehickey@gmail.com", 
         role = c("cre", "aut"),
@@ -45,13 +45,13 @@ LazyData: true
 Depends: R (>= 3.6.0), nlme, survival
 Imports: cobs, doParallel, foreach, generics, ggplot2, graphics, lme4
         (>= 1.1-8), MASS, Matrix, mvtnorm, parallel, randtoolbox, Rcpp
-        (>= 0.12.7), stats, tibble, utils
+        (>= 0.12.7), RcppArmadillo, stats, tibble, utils
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
 Suggests: bindrcpp, dplyr, JM, joineR, knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2023-01-20 04:08:32 UTC; hickey
+Packaged: 2025-02-04 15:47:38 UTC; hickeg3
 Author: Graeme L. Hickey [cre, aut] (<https://orcid.org/0000-0002-4989-0054>),
   Pete Philipson [aut] (<https://orcid.org/0000-0001-7846-0208>),
   Andrea Jorgensen [ctb] (<https://orcid.org/0000-0002-6977-9337>),
@@ -63,4 +63,4 @@ Author: Graeme L. Hickey [cre, aut] (<https://orcid.org/0000-0002-4989-0054>),
   Medical Research Council [fnd] (Grant number: MR/M013227/1)
 Maintainer: Graeme L. Hickey <graemeleehickey@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-01-20 04:50:02 UTC
+Date/Publication: 2025-02-04 16:30:02 UTC

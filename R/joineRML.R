@@ -1,5 +1,8 @@
-#' joineRML
-#'
+#' @keywords internal
+"_PACKAGE"
+#' @name joineRML
+#' @title joineRML
+#' 
 #' @description joineRML is an extension of the joineR package for fitting joint
 #'   models of time-to-event data and multivariate longitudinal data. The model
 #'   fitted in joineRML is an extension of the Wulfsohn and Tsiatis (1997) and
@@ -9,12 +12,12 @@
 #'   extension of the Laird and Ware (1982) regression model. The model is
 #'   fitted using a Monte Carlo Expectation-Maximization (MCEM) algorithm, which
 #'   closely follows the methodology presented by Lin et al. (2002).
-#'
+#'   
 #' @useDynLib joineRML, .registration = TRUE
 #' @importFrom Rcpp evalCpp
+#' @importFrom RcppArmadillo armadillo_throttle_cores armadillo_reset_cores
 #'
 #' @references
-#'
 #' Wulfsohn MS, Tsiatis AA. A joint model for survival and longitudinal data
 #' measured with error. \emph{Biometrics.} 1997; \strong{53(1)}: 330-339.
 #'
@@ -27,7 +30,4 @@
 #'
 #' Laird NM, Ware JH. Random-effects models for longitudinal data.
 #' \emph{Biometrics.} 1982; \strong{38(4)}: 963-974.
-#'
-#' @docType package
-#' @name joineRML
 NULL

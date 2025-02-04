@@ -1,3 +1,31 @@
+# joineRML 0.4.7
+
+## Housekeeping
+
+-   Updated README: badges and MRC logo.
+
+-   Removed CXX11 requirement from Makevars files.
+
+-   Update `plot.ranef.mjoint()` function due to deprecated `aes_string()` call.
+
+-   Fixed deprecated documentation for `joineRML.R`.
+
+-   Updated broken links in `plot.ranef.mjoint.R` and `vcov.mjoint.R`.
+
+-   Updated GitHub actions workflows.
+
+-   Ran reverse dependency checks using `revdepcheck` package.
+
+-   Updated CITATION file due to deprecated function and typo.
+
+-   Wrapped a bunch of examples from being run on CRAN submission to avoid Debian system NOTE.
+
+-   Reduced computational time for vignettes to to try and avoid Debian system NOTE on CRAN submission.
+
+-   Add R-hub workflow to enable checks for platforms not covered already.
+
+-   Imported `RcppArmadillo` functions `armadillo_throttle_cores` and `armadillo_reset_cores` to try and prevent CRAN R CMD checks using multiple threads.
+
 # joineRML 0.4.6
 
 ## Housekeeping

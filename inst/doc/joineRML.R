@@ -1,5 +1,15 @@
-## ---- echo = FALSE, message = FALSE-------------------------------------------
-#knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+## ----echo=FALSE, message=FALSE------------------------------------------------
+library(RcppArmadillo)
+RcppArmadillo::armadillo_throttle_cores(n = 2)
+
+Sys.setenv(OMP_THREAD_LIMIT = 1)
+Sys.setenv(OMP_NUM_THREADS = 1)
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(ARMA_OPENMP_THREADS = 1)
+Sys.setenv(R_INSTALL_NCPUS = 1)
+options(Ncpus = 1)
+
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(Matrix)
 library(nlme)
 library(survival)
@@ -10,12 +20,6 @@ if (requireNamespace('joineR', quietly = TRUE)) {
 } else {
   message("'joineR' not available")
 }
-
-## ----vignette, eval=FALSE-----------------------------------------------------
-#  vignette("technical", package = "joineRML")
-
-## ----heart.valve_help, eval=FALSE---------------------------------------------
-#  help("heart.valve", package = "joineRML")
 
 ## ----heart.valve_data---------------------------------------------------------
 library("joineRML")
@@ -29,7 +33,10 @@ names(heart.valve)
 ## ----hvd_data-----------------------------------------------------------------
 hvd <- heart.valve[!is.na(heart.valve$grad) & !is.na(heart.valve$lvmi), ]
 
-## ----hvd_model_fit, cache=TRUE------------------------------------------------
+## ----hvd_data_small-----------------------------------------------------------
+hvd <- hvd[hvd$num <= 50, ]
+
+## ----hvd_model_fit------------------------------------------------------------
 set.seed(12345)
 fit <- mjoint(
   formLongFixed = list("grad" = log.grad ~ time + sex + hs, 
@@ -54,19 +61,10 @@ head(ranef(fit))
 plot(fit, params = "gamma")
 plot(fit, params = "beta")
 
-## ----hvd_model_boot, eval=FALSE-----------------------------------------------
-#  fit.se <- bootSE(fit, nboot = 100)
-
-## ----hvd_model_boot_print, eval=FALSE-----------------------------------------
-#  fit.se
-
-## ----hvd_model_boot_summary, eval=FALSE---------------------------------------
-#  summary(fit, bootSE = fit.se)
-
 ## ----joineR_require, echo=FALSE, message=FALSE--------------------------------
 joineR_available <- require(joineR)
 
-## ----joineR, cache=TRUE, eval=joineR_available--------------------------------
+## ----joineR, eval=joineR_available, purl=joineR_available---------------------
 library(joineR, quietly = TRUE)
 
 hvd.surv <- UniqueVariables(hvd, var.col = c("fuyrs", "status"), id.col = "num")
@@ -86,7 +84,7 @@ fit.joiner <- joint(data = hvd.jd,
 
 summary(fit.joiner)
 
-## ----joineRML, cache=TRUE-----------------------------------------------------
+## ----joineRML-----------------------------------------------------------------
 set.seed(123)
 fit.joinerml <- mjoint(formLongFixed = log.lvmi ~ time + age,
                        formLongRandom = ~ time | num,
@@ -96,7 +94,7 @@ fit.joinerml <- mjoint(formLongFixed = log.lvmi ~ time + age,
 
 summary(fit.joinerml)
 
-## ----re_comp_plot, fig.width=7.25, fig.height=4, eval=joineR_available--------
+## ----re_comp_plot, fig.width=7.25, fig.height=4, eval=joineR_available, purl=joineR_available----
 id <- as.numeric(row.names(fit.joiner$coefficients$random))
 id.ord <- order(id) # joineR rearranges patient ordering during EM fit
 par(mfrow = c(1, 2))
@@ -110,4 +108,7 @@ plot(fit.joiner$coefficients$random[id.ord, 2], ranef(fit.joinerml)[, 2],
      xlab = "joineR", ylab = "joineRML")
 grid()
 abline(a = 0, b = 1, col = 2, lty = "dashed")
+
+## ----echo=FALSE, message=FALSE------------------------------------------------
+RcppArmadillo::armadillo_reset_cores()
 

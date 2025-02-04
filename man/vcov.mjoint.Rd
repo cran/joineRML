@@ -32,11 +32,12 @@ This is a generic function that extracts the variance-covariance
   and Krishnan 2008 for details), so is only approximate.
 }
 \note{
-This function is not to be confused with \code{\link{getVarCov}}, which
-  returns the extracted variance-covariance matrix for the random effects
-  distribution.
+This function is not to be confused with \code{\link[nlme]{getVarCov}},
+  which returns the extracted variance-covariance matrix for the random
+  effects distribution.
 }
 \examples{
+\dontrun{
 # Fit a classical univariate joint model with a single longitudinal outcome
 # and a single time-to-event outcome
 
@@ -52,6 +53,7 @@ fit1 <- mjoint(formLongFixed = log.lvmi ~ time + age,
     control = list(nMCscale = 2, burnin = 5)) # controls for illustration only
 
 vcov(fit1)
+}
 
 \dontrun{
 # Fit a joint model with bivariate longitudinal outcomes

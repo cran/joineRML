@@ -1,10 +1,16 @@
-## ----load-joineRML, include = FALSE-------------------------------------------
+## ----load-joineRML, include=FALSE---------------------------------------------
+library(RcppArmadillo)
+RcppArmadillo::armadillo_throttle_cores(2)
+
+Sys.setenv(OMP_THREAD_LIMIT = 1)
+Sys.setenv(OMP_NUM_THREADS = 1)
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(ARMA_OPENMP_THREADS = 1)
+Sys.setenv(R_INSTALL_NCPUS = 1)
+options(Ncpus = 1)
+
 library(joineRML)
 library(knitr)
-
-## ----vignette, eval = FALSE---------------------------------------------------
-#  vignette("joineRML", package = "joineRML")
-#  help("heart.valve", package = "joineRML")
 
 ## ----hvd_data-----------------------------------------------------------------
 data(heart.valve)
@@ -39,11 +45,7 @@ tidy(fit, component = "longitudinal")
 tidy(fit, ci = TRUE)
 tidy(fit, ci = TRUE, conf.level = 0.99)
 
-## ----tidy-boot, eval = FALSE--------------------------------------------------
-#  bSE <- bootSE(fit, nboot = 100, safe.boot = TRUE, progress = FALSE)
-#  tidy(fit, boot_se = bSE, conf.int = TRUE)
-
-## ----tidy-plotting, fig.height = 5, fig.width = 5, fig.align = "center"-------
+## ----tidy-plotting, fig.height=5, fig.width=5, fig.align="center"-------------
 library(ggplot2)
 out <- tidy(fit, conf.int = TRUE)
 ggplot(out, aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -87,6 +89,6 @@ fit2 <- mjoint(
 glance(fit)
 glance(fit2)
 
-## ----vignette-broom, eval = FALSE---------------------------------------------
-#  vignette(topic = "broom", package = "broom")
+## ----echo=FALSE, message=FALSE------------------------------------------------
+RcppArmadillo::armadillo_reset_cores()
 

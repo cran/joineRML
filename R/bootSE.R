@@ -61,7 +61,7 @@
 #'
 #' @return An object of class \code{bootSE}.
 #' @import foreach
-#' @importFrom parallel detectCores
+#' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @export
 #'
@@ -89,7 +89,7 @@
 #' }
 bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
                    verbose = FALSE, control = list(), progress = TRUE,
-                   ncores = 1, safe.boot = FALSE, ...) {
+                   ncores = 1L, safe.boot = FALSE, ...) {
 
   if (!inherits(object, "mjoint")) {
     stop("Use only with 'mjoint' model objects.\n")
@@ -168,7 +168,7 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
       }
     }
 
-  if (ncores > 1) {
+  if (ncores >= 1L) {
     ncores.max <- parallel::detectCores()
     if (ncores > ncores.max) {
       ncores <- ncores.max
@@ -177,13 +177,14 @@ bootSE <- function(object, nboot = 100, ci = 0.95, use.mle = TRUE,
         ncores.max))
     }
     # *** Parallel version ***
-    doParallel::registerDoParallel(cores = ncores)
+    cl <- parallel::makeCluster(ncores)
+    doParallel::registerDoParallel(cl)
     out <- foreach(b = 1:nboot, .packages = 'joineRML') %dopar% {
       fit.boot <- bootfun()
       return(list("coefs" = fit.boot$coefficient,
                   "conv" = fit.boot$conv))
     }
-    registerDoSEQ()
+    parallel::stopCluster(cl)
   } else {
     # *** Serial version (incl. progress bar) ***
     out <- list()

@@ -7,11 +7,19 @@ vignette: >
   %\VignetteIndexEntry{joineRML and the broom package}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  chunk_output_type: console
 ---
 
-```{r load-joineRML, include = FALSE}
+```{r load-joineRML, include=FALSE}
+library(RcppArmadillo)
+RcppArmadillo::armadillo_throttle_cores(2)
+
+Sys.setenv(OMP_THREAD_LIMIT = 1)
+Sys.setenv(OMP_NUM_THREADS = 1)
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(ARMA_OPENMP_THREADS = 1)
+Sys.setenv(R_INSTALL_NCPUS = 1)
+options(Ncpus = 1)
+
 library(joineRML)
 library(knitr)
 ```
@@ -19,6 +27,7 @@ library(knitr)
 # Introduction
 
 Tidiers for objects of class `mjoint` have been included in latest release of `joineRML` package (0.4.5).
+
 The purpose of these tidiers are described in the introductory vignette to `broom`:
 
 > The broom package takes the messy output of built-in functions in R, such as `lm`, `nls`, or `t.test`, and turns them into tidy data frames.
@@ -37,7 +46,7 @@ These methods are specifically useful when plotting results of a joint model or 
 
 We use the sample example from the introductory vignette to `joineRML` using the heart valve data.
 
-```{r vignette, eval = FALSE}
+```{r vignette, eval=FALSE, purl=FALSE}
 vignette("joineRML", package = "joineRML")
 help("heart.valve", package = "joineRML")
 ```
@@ -95,8 +104,12 @@ tidy(fit, ci = TRUE, conf.level = 0.99)
 
 The standard errors reported by default are based on the empirical information matrix, as in `mjoint`. It is of course possible to use bootstrapped standard errors as follows:
 
-```{r tidy-boot, eval = FALSE}
-bSE <- bootSE(fit, nboot = 100, safe.boot = TRUE, progress = FALSE)
+```{r tidy-boot, eval=FALSE, purl=FALSE}
+bSE <- bootSE(fit, 
+              nboot = 100, 
+              safe.boot = TRUE, 
+              progress = FALSE,
+              ncores = 1L)
 tidy(fit, boot_se = bSE, conf.int = TRUE)
 ```
 
@@ -104,7 +117,7 @@ The results of this example are not included as it would take too long to run fo
 
 The `tidy` method is useful for custom plotting (e.g. forest plots) of results from `joineRML` models, all in a tidy framework:
 
-```{r tidy-plotting, fig.height = 5, fig.width = 5, fig.align = "center"}
+```{r tidy-plotting, fig.height=5, fig.width=5, fig.align="center"}
 library(ggplot2)
 out <- tidy(fit, conf.int = TRUE)
 ggplot(out, aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -173,6 +186,10 @@ glance(fit2)
 
 Several examples of how to use `broom` including more details are available on its introductory vignette:
 
-```{r vignette-broom, eval = FALSE}
+```{r vignette-broom, eval=FALSE, purl=FALSE}
 vignette(topic = "broom", package = "broom")
+```
+
+```{r, echo=FALSE, message=FALSE}
+RcppArmadillo::armadillo_reset_cores()
 ```
